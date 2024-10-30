@@ -132,10 +132,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="YFileManager.cpp" />
+    <ClCompile Include="BaseWidget.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="YApplication.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="asm_core_functions.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseWidget.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="Panel.h" />
+    <ClInclude Include="YApplication.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
