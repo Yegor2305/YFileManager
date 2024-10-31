@@ -1,51 +1,165 @@
 #include "YApplication.h"
 
-YApplication::YApplication(HANDLE& screen_buffer_handle, CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+YApplication::YApplication()
 {
-	this->Screen_Buffer_Handle = screen_buffer_handle;
-	this->Screen_Buffer = screen_buffer;
-	this->Screen_Buffer_Info = screen_buffer_info;
-	this->Width = Screen_Buffer_Info.dwSize.X;
-	this->Height = Screen_Buffer_Info.dwSize.Y;
+
+	this->Std_Output_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	this->Screen_Buffer_Handle = CreateConsoleScreenBuffer(
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+
+	this->Std_Input_Handle = GetStdHandle(STD_INPUT_HANDLE);
+	if (this->Std_Input_Handle == INVALID_HANDLE_VALUE) {
+		this->ExitWithError("GetStdHandle (input) failed");
+	}
+	
+	if (this->Std_Output_Handle == INVALID_HANDLE_VALUE || this->Screen_Buffer_Handle == INVALID_HANDLE_VALUE) {
+		this->ExitWithError("CreateConsoleScreenBuffer failed");
+	}
+
+	if (!GetConsoleMode(this->Std_Input_Handle, &this->Old_Console_Mode)) {
+		this->ExitWithError("GetConsoleMode failed");
+	}
+
+	if (!SetConsoleMode(this->Std_Input_Handle, ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT | ENABLE_INSERT_MODE | ENABLE_EXTENDED_FLAGS)) {
+		this->ExitWithError("SetConsoleMode failed");
+	}
+
+	if (!SetConsoleActiveScreenBuffer(this->Screen_Buffer_Handle)) {
+		this->ExitWithError("SetConsoleActiveScreenBuffer failed");
+	}
+
+	if (!GetConsoleScreenBufferInfo(this->Screen_Buffer_Handle, &this->Screen_Buffer_Info)) {
+		this->ExitWithError("GetConsoleScreenBufferInfo failed");
+	}
+
+	this->Width = this->Screen_Buffer_Info.dwSize.X;
+	this->Height = this->Screen_Buffer_Info.dwSize.Y;
+
+	SetConsoleCursorPosition(this->Screen_Buffer_Handle, { 0, this->Screen_Buffer_Info.srWindow.Bottom });
+
+	COORD max_size = GetLargestConsoleWindowSize(this->Screen_Buffer_Handle);
+	this->Buffer_Size = max_size.X * max_size.Y;
+	this->Max_Width = max_size.X;
+	this->Max_Height = max_size.Y;
+
+	this->Screen_Buffer = new CHAR_INFO[this->Buffer_Size];
+	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
+	this->Input_Record_Buffer = new INPUT_RECORD[this->Buffer_Size];
+}
+
+YApplication::~YApplication()
+{
+	delete[] this->Screen_Buffer;
+	delete[] this->Input_Record_Buffer;
+	SetConsoleActiveScreenBuffer(this->Std_Output_Handle);
+	SetConsoleMode(this->Std_Input_Handle, this->Old_Console_Mode);
 }
 
 void YApplication::AddWidget(BaseWidget* widget)
 {	
-	widget->Screen_Buffer = this->Screen_Buffer;
-	widget->Screen_Buffer_Info = this->Screen_Buffer_Info;
+	if (widget->Height > this->Height)
+		widget->Height = this->Height;
+	if (widget->Width > this->Width)
+		widget->Width = this->Width;
+
 	this->Children.push_back(widget);
 }
 
-void YApplication::Draw()
+void YApplication::DrawChildren()
 {
 	
 	for (int i = 0; i < this->Children.size(); i++) {
-		
 		this->Children[i]->Width = this->Width;
 		this->Children[i]->Height = this->Height;
-		this->Children[i]->Screen_Buffer = this->Screen_Buffer;
-		this->Children[i]->Screen_Buffer_Info = this->Screen_Buffer_Info;
-		this->Children[i]->Draw();
+		this->Children[i]->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
+	}
+
+	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
+		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
+		this->ExitWithError("WriteConsoleOutput failed");
 	}
 
 }
 
-void YApplication::Resize(CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info)
+void YApplication::ExitWithError(LPCSTR error_message)
 {
-	auto t = GetConsoleScreenBufferInfo(this->Screen_Buffer_Handle, &this->Screen_Buffer_Info);
-	if (this->Screen_Buffer_Info.dwSize.X != this->Width) {
-		this->Width = this->Screen_Buffer_Info.dwSize.X;
-		this->Height = this->Screen_Buffer_Info.dwSize.Y;
+	printf("(%s) - (%d)\n", error_message, GetLastError());
+	this->Can_Run = false;
+	ExitProcess(0);
+}
 
-		delete[] this->Screen_Buffer;
-		this->Screen_Buffer = new CHAR_INFO[this->Width * this->Height];
+void YApplication::Run()
+{
+	this->Can_Run = true;
 
-		this->Draw();
-		COORD screen_buffer_coord{};
-		if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
-			this->Screen_Buffer_Info.dwSize, screen_buffer_coord, &this->Screen_Buffer_Info.srWindow)) {
-			printf("WriteConsoleOutput failed - (%d)\n", GetLastError());
+	this->DrawChildren();
+
+	while (this->Can_Run) {
+		
+		if (!ReadConsoleInput(this->Std_Input_Handle, this->Input_Record_Buffer, this->Buffer_Size, &this->Number_Input_Records)) {
+			this->ExitWithError("ReadConsoleInput failed");
 		}
+		for (unsigned short i = 0; i < this->Number_Input_Records; i++) {
+			switch (this->Input_Record_Buffer[i].EventType)
+			{
+			case KEY_EVENT:
+				break;
+			case MOUSE_EVENT:
+				break;
+			case WINDOW_BUFFER_SIZE_EVENT:
+				this->Resize();
+				this->DrawChildren();
+				break;
+			case FOCUS_EVENT:
+				break;
+			case MENU_EVENT:
+				break;
+			default:
+				this->ExitWithError("Unknown event type");
+				break;
+			}
+		}
+
+		//Sleep(3000);
+		Sleep(this->Delay_Time);
 	}
+}
+
+void YApplication::PrintColorPalete(int seconds)
+{
+	if (this->Can_Run) return;
+
+	CHAR_INFO symbol_info{};
+	symbol_info.Char.UnicodeChar = L'X';
+	PrintColorPalette(this->Screen_Buffer, OutputPos(0, 0, this->Screen_Buffer_Info.dwSize.X,
+		this->Screen_Buffer_Info.dwSize.X), symbol_info);
+
+	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
+		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
+		this->ExitWithError("WriteConsoleOutput failed");
+	}
+	Sleep(seconds * 1000);
+}
+
+void YApplication::SetFPS(unsigned short fps_value)
+{
+	this->Delay_Time = 1000 / fps_value;
+}
+
+void YApplication::Resize()
+{
+	
+	if (!GetConsoleScreenBufferInfo(this->Screen_Buffer_Handle, &this->Screen_Buffer_Info)) {
+		this->ExitWithError("GetConsoleScreenBufferInfo failed");
+	}
+
+	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
+	this->Width = this->Screen_Buffer_Info.dwSize.X;
+	this->Height = this->Screen_Buffer_Info.dwSize.Y;
+
+	SetConsoleCursorPosition(this->Screen_Buffer_Handle, { 0, this->Screen_Buffer_Info.srWindow.Bottom });
+
 }
 	

@@ -6,7 +6,7 @@
 class Panel : public BaseWidget
 {
 public:
-	void Draw() override;
 	Panel(unsigned short width, unsigned short height);
+	void Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) override;
 };
 

@@ -11,11 +11,26 @@
 class YApplication : public BaseWidget
 {
 public:
-	YApplication(HANDLE& screen_buffer_handle, CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
-	void AddWidget(BaseWidget* widget);
-	void Draw();
-	void Resize(CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info);
+	YApplication();
+	~YApplication();
+	void AddWidget(BaseWidget* widget);	
+	void Run();
+	void PrintColorPalete(int seconds);
+	void SetFPS(unsigned short fps_value);
+	
 private:
-	HANDLE Screen_Buffer_Handle;
+	void Resize();
+	void DrawChildren();
+	void ExitWithError(LPCSTR error_message);
+	HANDLE Std_Output_Handle, Std_Input_Handle, Screen_Buffer_Handle;
+	CHAR_INFO* Screen_Buffer = nullptr;
+	INPUT_RECORD* Input_Record_Buffer = nullptr;
+	DWORD Old_Console_Mode, Number_Input_Records;
+	CONSOLE_SCREEN_BUFFER_INFO Screen_Buffer_Info{};
+	COORD Screen_Buffer_Coord{};
 	std::vector<BaseWidget*> Children;
+	unsigned short Max_Height=0, Max_Width=0;
+	int Buffer_Size{};
+	int Delay_Time = 30;
+	bool Can_Run = false;
 };
