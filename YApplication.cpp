@@ -2,6 +2,9 @@
 
 YApplication::YApplication()
 {
+	// Disable user resizing
+	HWND hwnd = GetConsoleWindow();
+	SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX));
 
 	this->Std_Output_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	this->Screen_Buffer_Handle = CreateConsoleScreenBuffer(
@@ -83,6 +86,14 @@ void YApplication::DrawChildren()
 
 }
 
+void YApplication::ClearBuffer()
+{
+	for (unsigned short i = 0; i < this->Buffer_Size; i++) {
+		this->Screen_Buffer[i].Char.UnicodeChar = L' ';
+		this->Screen_Buffer[i].Attributes = 0x0f;
+	}
+}
+
 void YApplication::ExitWithError(LPCSTR error_message)
 {
 	printf("(%s) - (%d)\n", error_message, GetLastError());
@@ -109,8 +120,6 @@ void YApplication::Run()
 			case MOUSE_EVENT:
 				break;
 			case WINDOW_BUFFER_SIZE_EVENT:
-				this->Resize();
-				this->DrawChildren();
 				break;
 			case FOCUS_EVENT:
 				break;
@@ -147,19 +156,3 @@ void YApplication::SetFPS(unsigned short fps_value)
 {
 	this->Delay_Time = 1000 / fps_value;
 }
-
-void YApplication::Resize()
-{
-	
-	if (!GetConsoleScreenBufferInfo(this->Screen_Buffer_Handle, &this->Screen_Buffer_Info)) {
-		this->ExitWithError("GetConsoleScreenBufferInfo failed");
-	}
-
-	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
-	this->Width = this->Screen_Buffer_Info.dwSize.X;
-	this->Height = this->Screen_Buffer_Info.dwSize.Y;
-
-	SetConsoleCursorPosition(this->Screen_Buffer_Handle, { 0, this->Screen_Buffer_Info.srWindow.Bottom });
-
-}
-	

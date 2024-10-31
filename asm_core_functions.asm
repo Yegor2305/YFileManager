@@ -24,10 +24,10 @@ SetOutputOffset proc
 SetOutputOffset endp
 
 DrawLineHorizontal proc
-;void DrawLineHorizontal(CHAR_INFO *screen_buffer, OutputPos pos, CHAR_INFO symbol_info);
+;void DrawLineHorizontal(CHAR_INFO* screen_buffer, OutputPos pos, LineInfo line_info);
 ;rcx - screen_buffer
 ;rdx - pos
-;r8 - symbol_info
+;r8 - line_info => first_char, second_char, medium_char, attribute
 	
 	push rax
 	push rbx
@@ -36,12 +36,27 @@ DrawLineHorizontal proc
 
 	call SetOutputOffset
 
-	mov eax, r8d ; eax = symbol_info
+	mov rax, r8 
+	shr rax, 32 ; eax high part = attribute
+	mov rbx, r8 ; bx = first_char
+	mov ax, bx ; ax = first_char | eax = attribute first_char
+
+	stosd
+
+	shr rbx, 16 ; bx = medium_char
+	mov ax, bx ; ax = medium_char
+
 	mov rcx, rdx
 	shr rcx, 48 ; rcx = len
-	
+	sub rcx, 2 ; counter for medium symbols (without first & last)
+
 	rep stosd
 
+	shr rbx, 16 ; bx = last_char
+	mov ax, bx ; ax = last_char
+
+	stosd
+	
 	pop rdi
 	pop rcx
 	pop rbx
@@ -64,22 +79,38 @@ DrawLineVertical proc
 
 	call SetOutputOffset
 
-	mov eax, r8d ; eax = symbol_info
-	mov rcx, rdx
-	shr rcx, 48 ; rcx = len
-	
+	mov rax, r8 
+	shr rax, 32 ; eax high part = attribute
+	mov rbx, r8 ; bx = first_char
+	mov ax, bx ; ax = first_char | eax = attribute first_char
+
 	mov r10, rdx
 	shr r10, 32
 	movzx r10, r10w
 	dec r10
 	shl r10, 2 ; r10 = screen_width in bytes - 1
 
+	mov rcx, rdx
+	shr rcx, 48 ; rcx = len
+	sub rcx, 2
+
+	stosd
+	add rdi, r10
+
+	shr rbx, 16 ; bx = medium_char
+	mov ax, bx ; ax = medium_char
+	
 printing_loop:
 	
 	stosd
 	add rdi, r10
 
 	loop printing_loop
+
+	shr rbx, 16 ; bx = last_char
+	mov ax, bx ; ax = last_char
+
+	stosd
 
 	pop r10
 	pop rdi

@@ -8,7 +8,7 @@ int main(void)
     Panel panel(120, 30);
     app.AddWidget(&panel);
     app.Run();
-    //app.PrintColorPalete(10);
+    //app.PrintColorPalete(30);
 
     return 1;
 }

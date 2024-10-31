@@ -19,8 +19,8 @@ public:
 	void SetFPS(unsigned short fps_value);
 	
 private:
-	void Resize();
 	void DrawChildren();
+	void ClearBuffer();
 	void ExitWithError(LPCSTR error_message);
 	HANDLE Std_Output_Handle, Std_Input_Handle, Screen_Buffer_Handle;
 	CHAR_INFO* Screen_Buffer = nullptr;
