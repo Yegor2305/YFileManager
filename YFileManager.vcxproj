@@ -134,8 +134,9 @@
   <ItemGroup>
     <ClCompile Include="BaseWidget.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Panel.cpp" />
+    <ClCompile Include="YPanel.cpp" />
     <ClCompile Include="YApplication.cpp" />
+    <ClCompile Include="YFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="asm_core_functions.asm" />
@@ -143,8 +144,9 @@
   <ItemGroup>
     <ClInclude Include="BaseWidget.h" />
     <ClInclude Include="Main.h" />
-    <ClInclude Include="Panel.h" />
+    <ClInclude Include="YPanel.h" />
     <ClInclude Include="YApplication.h" />
+    <ClInclude Include="YFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

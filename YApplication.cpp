@@ -73,10 +73,11 @@ void YApplication::AddWidget(BaseWidget* widget)
 void YApplication::DrawChildren()
 {
 	
-	for (int i = 0; i < this->Children.size(); i++) {
-		this->Children[i]->Width = this->Width;
-		this->Children[i]->Height = this->Height;
-		this->Children[i]->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
+	for (auto& i : this->Children)
+	{
+		i->Width = this->Width;
+		i->Height = this->Height;
+		i->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
 	}
 
 	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
@@ -91,6 +92,14 @@ void YApplication::ClearBuffer()
 	for (unsigned short i = 0; i < this->Buffer_Size; i++) {
 		this->Screen_Buffer[i].Char.UnicodeChar = L' ';
 		this->Screen_Buffer[i].Attributes = 0x0f;
+	}
+}
+
+void YApplication::ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event)
+{
+	for (auto& i : this->Children)
+	{
+		//i->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
 	}
 }
 
@@ -118,6 +127,7 @@ void YApplication::Run()
 			case KEY_EVENT:
 				break;
 			case MOUSE_EVENT:
+				this->ReportChildrenMouseMovement(this->Input_Record_Buffer[i].Event.MouseEvent);
 				break;
 			case WINDOW_BUFFER_SIZE_EVENT:
 				break;

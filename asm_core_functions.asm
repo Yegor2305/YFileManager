@@ -121,6 +121,43 @@ printing_loop:
 
 DrawLineVertical endp
 
+DrawLabel proc
+;DrawLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const char* text)
+;rcx - screen_buffer
+;rdx - label_info
+;r8 - text
+	
+	push rax
+	push rbx
+	push rdi
+
+	call SetOutputOffset
+
+	mov rax, rdx
+	shr rax, 32 ; eax (high part) = attributes
+
+	xor ax, ax
+	
+	 
+printing_loop:
+	
+	mov al, [ r8 ] ; al = first symbol
+	cmp al, 0
+	je loop_end
+
+	stosd
+	inc r8
+	jmp printing_loop
+
+loop_end:
+	
+	pop rdi
+	pop rbx
+	pop rax
+
+	ret
+DrawLabel endp
+
 PrintColorPalette proc
 ;rcx - screen_buffer
 ;rdx - pos

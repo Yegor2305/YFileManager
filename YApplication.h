@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "Main.h"
 #include "BaseWidget.h"
+#include "YPanel.h"
 
 
 class YApplication : public BaseWidget
@@ -21,6 +22,7 @@ public:
 private:
 	void DrawChildren();
 	void ClearBuffer();
+	void ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event);
 	void ExitWithError(LPCSTR error_message);
 	HANDLE Std_Output_Handle, Std_Input_Handle, Screen_Buffer_Handle;
 	CHAR_INFO* Screen_Buffer = nullptr;

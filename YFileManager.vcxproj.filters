@@ -29,18 +29,21 @@
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="Panel.cpp">
+    <ClCompile Include="YPanel.cpp">
       <Filter>Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseWidget.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YApplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="YFile.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Panel.h">
+    <ClInclude Include="YPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Main.h">
@@ -50,6 +53,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="YApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
