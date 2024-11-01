@@ -9,21 +9,22 @@ YFile::YFile(unsigned short x_pos, unsigned short y_pos, const char* name, WORD 
 	this->Hover_Attributes = hover_attributes;
 }
 
-void YFile::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+auto YFile::Draw(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
 {
 	if (this->Label_Info.Screen_Width == 0)
 		this->Label_Info.Screen_Width = screen_buffer_info.dwSize.X;
 
-	DrawLabel(screen_buffer, this->Label_Info, this->Name);
+	//DrawLabel(screen_buffer, this->Label_Info, this->Name);
+	DrawLimitedLabel(screen_buffer, this->Label_Info, this->Name, 4);
 }
 
-void YFile::Mouse_Enter(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+void YFile::Mouse_Enter(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
 {
 	this->Label_Info.Attributes = this->Hover_Attributes;
 	this->Draw(screen_buffer, screen_buffer_info);
 }
 
-void YFile::Mouse_Leave(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+void YFile::Mouse_Leave(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
 {
 	this->Label_Info.Attributes = this->Default_Attributes;
 	this->Draw(screen_buffer, screen_buffer_info);

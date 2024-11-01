@@ -35,13 +35,13 @@ YPanel::YPanel(unsigned short width, unsigned short height,
 	this->Width = width;
 	this->Height = height;
 
-	this->Files_List.emplace_back(YFile(2, 1, "First"));
-	this->Files_List.emplace_back(YFile(2, 2, "Second"));
+	this->Files_List.emplace_back(YFile(this->Pos_X + 2, this->Pos_Y + 1, "First"));
+	this->Files_List.emplace_back(YFile(this->Pos_X + 2, this->Pos_Y + 2, "Second"));
 }
 
 void YPanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
 {
-	OutputPos pos(this->Pos_X, this->Pos_Y, screen_buffer_info.dwSize.X, this->Width / 2);
+	OutputPos pos(this->Pos_X, this->Pos_Y, screen_buffer_info.dwSize.X, this->Width);
 	LineInfo line_info{};
 	LabelInfo label_info(3, 3, screen_buffer_info.dwSize.X, 0xf0);
 
@@ -88,7 +88,7 @@ void YPanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_b
 
 	if (this->Border_Right)
 	{
-		pos.X_Pos = this->Width / 2 - 1;
+		pos.X_Pos = this->Width - 1;
 
 		DrawLineVertical(screen_buffer, pos, line_info);
 	}
@@ -97,7 +97,7 @@ void YPanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_b
 
 	pos.X_Pos = this->Pos_X + static_cast<unsigned short>(this->Border_Left);
 	pos.Y_Pos = this->Pos_Y + static_cast<unsigned short>(this->Border_Top);
-	pos.Length = this->Width / 2 - (this->Border_Left + this->Border_Right);
+	pos.Length = this->Width - (this->Border_Left + this->Border_Right);
 
 	line_info.FirstChar.UnicodeChar = L' ';
 	line_info.MediumChar.UnicodeChar = L' ';
@@ -117,7 +117,31 @@ void YPanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_b
 
 void YPanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event)
 {
-	return;
+	if (mouse_event.dwMousePosition.X >= this->Pos_X && mouse_event.dwMousePosition.X <= this->Pos_X + this->Width &&
+		mouse_event.dwMousePosition.Y >= this->Pos_Y && mouse_event.dwMousePosition.Y <= this->Pos_Y + this->Height)
+	{
+		int file_index = mouse_event.dwMousePosition.Y - this->Pos_Y - 1;
+		if (this->Hovered_File_Index != -1 && file_index != this->Hovered_File_Index)
+		{
+			this->Files_List[Hovered_File_Index].Mouse_Leave(screen_buffer, screen_buffer_info);
+		}
+
+		if (file_index < this->Files_List.size())
+		{
+			this->Files_List[file_index].Mouse_Enter(screen_buffer, screen_buffer_info);
+			this->Hovered_File_Index = file_index;
+		}
+	}
+	else
+	{
+		if (this->Hovered_File_Index != -1)
+		{
+			this->Files_List[Hovered_File_Index].Mouse_Leave(screen_buffer, screen_buffer_info);
+			this->Hovered_File_Index = -1;
+		}
+		
+	}
+	
 }
 
 

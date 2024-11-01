@@ -137,7 +137,6 @@ DrawLabel proc
 	shr rax, 32 ; eax (high part) = attributes
 
 	xor ax, ax
-	
 	 
 printing_loop:
 	
@@ -157,6 +156,63 @@ loop_end:
 
 	ret
 DrawLabel endp
+
+DrawLimitedLabel proc
+;void DrawLimitedLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const char* text, unsigned short length_limit)
+;rcx - screen_buffer
+;rdx - label_info
+;r8 - text
+;r9 - length_limit
+
+	push rax
+	push rbx
+	push rcx
+	push rdi
+	push r9
+
+	call SetOutputOffset
+
+	mov rax, rdx
+	shr rax, 32 ; eax (high part) = attributes
+
+	xor ax, ax
+
+	mov rcx, r9
+	movzx rcx, cx
+	mov r9, rcx
+	
+	 
+printing_loop:
+	
+	mov al, [ r8 ] ; al = first symbol
+	cmp al, 0
+	je fill_with_spaces
+
+	stosd
+	inc r8
+
+	dec r9
+	cmp r9, 0
+	je loop_end
+
+	jmp printing_loop
+
+fill_with_spaces:
+	mov al, 20h
+	mov rcx, r9
+	movzx rcx, cx
+	rep stosd
+
+loop_end:
+	
+	pop r9
+	pop rdi
+	pop rcx
+	pop rbx
+	pop rax
+	ret
+
+DrawLimitedLabel endp
 
 PrintColorPalette proc
 ;rcx - screen_buffer

@@ -1,8 +1,8 @@
 #pragma once
-#include "Main.h"
+
 #include "BaseWidget.h"
 #include "YFile.h"
-#include "YApplication.h"
+#include <vector>
 
 class YPanel : public BaseWidget
 {
@@ -19,5 +19,6 @@ private:
 	WCHAR Corner_Top_Left, Corner_Top_Right, Corner_Bottom_Left, Corner_Bottom_Right, Horizontal_Line_Char, Vertical_Line_Char;
 	WORD Background_Attributes, Border_Attributes;
 	std::vector<YFile> Files_List{};
+	int Hovered_File_Index = -1;
 };
 

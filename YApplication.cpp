@@ -1,10 +1,10 @@
 #include "YApplication.h"
 
-YApplication::YApplication()
+YApplication::YApplication(short width, short height)
 {
 	// Disable user resizing
-	HWND hwnd = GetConsoleWindow();
-	SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX));
+	HWND console = GetConsoleWindow();
+	SetWindowLong(console, GWL_STYLE, GetWindowLong(console, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX));
 
 	this->Std_Output_Handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	this->Screen_Buffer_Handle = CreateConsoleScreenBuffer(
@@ -29,6 +29,20 @@ YApplication::YApplication()
 		this->ExitWithError("SetConsoleMode failed");
 	}
 
+	// Setting console buffer size
+	if (!SetConsoleScreenBufferSize(this->Screen_Buffer_Handle, { width, height }))
+	{
+		this->ExitWithError("SetConsoleScreenBufferSize failed");
+	}
+
+	// Setting console window size
+	SMALL_RECT window_size = {0, 0, static_cast<short>(width - 1), static_cast<short>(height - 1) };
+	if (!SetConsoleWindowInfo(this->Screen_Buffer_Handle, TRUE, &window_size))
+	{
+		this->ExitWithError("SetConsoleWindowInfo failed");
+	}
+
+	// Setting console active buffer
 	if (!SetConsoleActiveScreenBuffer(this->Screen_Buffer_Handle)) {
 		this->ExitWithError("SetConsoleActiveScreenBuffer failed");
 	}
@@ -56,11 +70,15 @@ YApplication::~YApplication()
 {
 	delete[] this->Screen_Buffer;
 	delete[] this->Input_Record_Buffer;
+	for (int i = this->Children.size() - 1; i >= 0; i--)
+	{
+		delete this->Children[i];
+	}
 	SetConsoleActiveScreenBuffer(this->Std_Output_Handle);
 	SetConsoleMode(this->Std_Input_Handle, this->Old_Console_Mode);
 }
 
-void YApplication::AddWidget(BaseWidget* widget)
+void YApplication::AddWidget(YPanel* widget)
 {	
 	if (widget->Height > this->Height)
 		widget->Height = this->Height;
@@ -75,8 +93,8 @@ void YApplication::DrawChildren()
 	
 	for (auto& i : this->Children)
 	{
-		i->Width = this->Width;
-		i->Height = this->Height;
+		/*i->Width = this->Width;
+		i->Height = this->Height;*/
 		i->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
 	}
 
@@ -99,7 +117,11 @@ void YApplication::ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event)
 {
 	for (auto& i : this->Children)
 	{
-		//i->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
+		i->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
+	}
+	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
+		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
+		this->ExitWithError("WriteConsoleOutput failed");
 	}
 }
 

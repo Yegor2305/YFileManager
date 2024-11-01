@@ -1,20 +1,16 @@
 #pragma once
-#include "BaseWidget.h"
-#include <memory>
+
 #include <vector>
 #include <windows.h>
-#include <stdio.h>
-#include "Main.h"
-#include "BaseWidget.h"
 #include "YPanel.h"
 
 
-class YApplication : public BaseWidget
+class YApplication
 {
 public:
-	YApplication();
+	YApplication(short width = 120, short height = 30);
 	~YApplication();
-	void AddWidget(BaseWidget* widget);	
+	void AddWidget(YPanel* widget);	
 	void Run();
 	void PrintColorPalete(int seconds);
 	void SetFPS(unsigned short fps_value);
@@ -30,8 +26,8 @@ private:
 	DWORD Old_Console_Mode, Number_Input_Records;
 	CONSOLE_SCREEN_BUFFER_INFO Screen_Buffer_Info{};
 	COORD Screen_Buffer_Coord{};
-	std::vector<BaseWidget*> Children;
-	unsigned short Max_Height=0, Max_Width=0;
+	std::vector<YPanel*> Children;
+	unsigned short Width, Height, Max_Height=0, Max_Width=0;
 	int Buffer_Size{};
 	int Delay_Time = 30;
 	bool Can_Run = false;
