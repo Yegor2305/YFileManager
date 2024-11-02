@@ -64,39 +64,28 @@ YApplication::YApplication(short width, short height)
 	this->Screen_Buffer = new CHAR_INFO[this->Buffer_Size];
 	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
 	this->Input_Record_Buffer = new INPUT_RECORD[this->Buffer_Size];
+
+	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height, L"F:/Games/*.*", 0, 0);
+	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/*.*", this->Width / 2, 0);
 }
 
 YApplication::~YApplication()
 {
 	delete[] this->Screen_Buffer;
 	delete[] this->Input_Record_Buffer;
-	for (int i = this->Children.size() - 1; i >= 0; i--)
-	{
-		delete this->Children[i];
-	}
+
+	delete this->Left_Panel;
+	delete this->Right_Panel;
+
 	SetConsoleActiveScreenBuffer(this->Std_Output_Handle);
 	SetConsoleMode(this->Std_Input_Handle, this->Old_Console_Mode);
 }
 
-void YApplication::AddWidget(YPanel* widget)
-{	
-	if (widget->Height > this->Height)
-		widget->Height = this->Height;
-	if (widget->Width > this->Width)
-		widget->Width = this->Width;
-
-	this->Children.push_back(widget);
-}
-
 void YApplication::DrawChildren()
 {
-	
-	for (auto& i : this->Children)
-	{
-		/*i->Width = this->Width;
-		i->Height = this->Height;*/
-		i->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
-	}
+
+	this->Left_Panel->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
+	this->Right_Panel->Draw(this->Screen_Buffer, this->Screen_Buffer_Info);
 
 	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
 		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
@@ -115,10 +104,9 @@ void YApplication::ClearBuffer()
 
 void YApplication::ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event)
 {
-	for (auto& i : this->Children)
-	{
-		i->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
-	}
+	this->Left_Panel->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
+	this->Right_Panel->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
+
 	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
 		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
 		this->ExitWithError("WriteConsoleOutput failed");

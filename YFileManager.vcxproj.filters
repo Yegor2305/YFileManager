@@ -29,7 +29,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="YPanel.cpp">
+    <ClCompile Include="YFilePanel.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
     <ClCompile Include="YApplication.cpp">
@@ -43,7 +43,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="YPanel.h">
+    <ClInclude Include="YFilePanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Main.h">

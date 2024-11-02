@@ -134,7 +134,7 @@
   <ItemGroup>
     <ClCompile Include="BaseWidget.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="YPanel.cpp" />
+    <ClCompile Include="YFilePanel.cpp" />
     <ClCompile Include="YApplication.cpp" />
     <ClCompile Include="YFile.cpp" />
   </ItemGroup>
@@ -144,7 +144,7 @@
   <ItemGroup>
     <ClInclude Include="BaseWidget.h" />
     <ClInclude Include="Main.h" />
-    <ClInclude Include="YPanel.h" />
+    <ClInclude Include="YFilePanel.h" />
     <ClInclude Include="YApplication.h" />
     <ClInclude Include="YFile.h" />
   </ItemGroup>

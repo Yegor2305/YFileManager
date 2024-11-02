@@ -122,7 +122,7 @@ printing_loop:
 DrawLineVertical endp
 
 DrawLabel proc
-;DrawLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const char* text)
+;DrawLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text)
 ;rcx - screen_buffer
 ;rdx - label_info
 ;r8 - text
@@ -145,7 +145,7 @@ printing_loop:
 	je loop_end
 
 	stosd
-	inc r8
+	add r8, 2
 	jmp printing_loop
 
 loop_end:
@@ -158,7 +158,7 @@ loop_end:
 DrawLabel endp
 
 DrawLimitedLabel proc
-;void DrawLimitedLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const char* text, unsigned short length_limit)
+;void DrawLimitedLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text, unsigned short length_limit)
 ;rcx - screen_buffer
 ;rdx - label_info
 ;r8 - text
@@ -183,17 +183,17 @@ DrawLimitedLabel proc
 	
 	 
 printing_loop:
-	
+
 	mov al, [ r8 ] ; al = first symbol
 	cmp al, 0
 	je fill_with_spaces
 
 	stosd
-	inc r8
+	add r8, 2
 
 	dec r9
 	cmp r9, 0
-	je loop_end
+	je add_brace
 
 	jmp printing_loop
 
@@ -202,6 +202,14 @@ fill_with_spaces:
 	mov rcx, r9
 	movzx rcx, cx
 	rep stosd
+	jmp loop_end
+
+add_brace:
+	mov al, [ r8 ]
+	cmp al, 0
+	je loop_end
+	mov al, 07dh
+	stosd
 
 loop_end:
 	
