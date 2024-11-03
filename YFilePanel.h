@@ -12,6 +12,7 @@ public:
 		BOOL border_left = 1, BOOL border_right = 1,
 		BOOL border_top = 1, BOOL border_bottom = 1, bool double_border = true,
 		WORD background_attributes = 0xf0, WORD border_attributes = 0xf0);
+	~YFilePanel() override;
 	void Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) override;
 	void MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event);
 private:

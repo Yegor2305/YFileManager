@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseButton.cpp" />
     <ClCompile Include="BaseWidget.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="YFilePanel.cpp" />
@@ -142,6 +143,7 @@
     <MASM Include="asm_core_functions.asm" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseButton.h" />
     <ClInclude Include="BaseWidget.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="YFilePanel.h" />

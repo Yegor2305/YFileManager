@@ -58,6 +58,16 @@ YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path
 	this->FillFiles(path);
 }
 
+YFilePanel::~YFilePanel()
+{
+	for (YFile* ptr: this->Files_List)
+	{
+		delete ptr;
+	}
+
+	this->Files_List.clear();
+}
+
 void YFilePanel::FillFiles(LPCWSTR path)
 {
 	
@@ -173,6 +183,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	line_info.FirstChar.UnicodeChar = this->Separator_Left_Char;
 	line_info.MediumChar.UnicodeChar = this->Separator_Char;
 	line_info.LastChar.UnicodeChar = this->Separator_Right_Char;
+	line_info.Attributes = this->Border_Attributes;
 
 	DrawLineHorizontal(screen_buffer, pos, line_info);
 
@@ -254,5 +265,3 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREE
 	}
 	
 }
-
-
