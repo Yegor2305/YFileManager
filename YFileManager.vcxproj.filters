@@ -44,6 +44,12 @@
     <ClCompile Include="BaseButton.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="YObserver.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="YNotifier.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="YFilePanel.h">
@@ -62,6 +68,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BaseButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YObserver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YNotifier.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -135,13 +135,11 @@ DrawLabel proc
 
 	mov rax, rdx
 	shr rax, 32 ; eax (high part) = attributes
-
-	xor ax, ax
 	 
 printing_loop:
 	
-	mov al, [ r8 ] ; al = first symbol
-	cmp al, 0
+	mov ax, [ r8 ] ; al = first symbol
+	cmp ax, 0
 	je loop_end
 
 	stosd
@@ -175,8 +173,6 @@ DrawLimitedLabel proc
 	mov rax, rdx
 	shr rax, 32 ; eax (high part) = attributes
 
-	xor ax, ax
-
 	mov rcx, r9
 	movzx rcx, cx
 	mov r9, rcx
@@ -184,8 +180,8 @@ DrawLimitedLabel proc
 	 
 printing_loop:
 
-	mov al, [ r8 ] ; al = first symbol
-	cmp al, 0
+	mov ax, [ r8 ] ; al = first symbol
+	cmp ax, 0
 	je fill_with_spaces
 
 	stosd
@@ -198,13 +194,14 @@ printing_loop:
 	jmp printing_loop
 
 fill_with_spaces:
-	mov al, 20h
+	mov ax, 20h
 	mov rcx, r9
 	movzx rcx, cx
 	rep stosd
 	jmp loop_end
 
 add_brace:
+	sub rdi, 4
 	mov al, [ r8 ]
 	cmp al, 0
 	je loop_end

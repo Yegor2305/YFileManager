@@ -5,6 +5,7 @@ YFile::YFile(unsigned short x_pos, unsigned short y_pos, const WIN32_FIND_DATA& 
 {
 	this->Label_Info = {x_pos, y_pos, 0, attributes};
 	this->Name = file_data.cFileName;
+	this->Is_Directory = file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
 	this->Default_Attributes = attributes;
 	this->Hover_Attributes = hover_attributes;
 	this->Selected_Attributes = selected_attributes;
@@ -18,4 +19,14 @@ void YFile::Draw(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& scr
 
 	//DrawLabel(screen_buffer, this->Label_Info, this->Name);
 	DrawLimitedLabel(screen_buffer, this->Label_Info, this->Name.c_str(), this->Max_Length);
+}
+
+std::wstring YFile::GetName() const
+{
+	return this->Name;
+}
+
+bool YFile::IsDirectory() const
+{
+	return this->Is_Directory;
 }
