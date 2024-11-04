@@ -50,6 +50,15 @@
     <ClCompile Include="YNotifier.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="YButton.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="NotImplementedException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YChangeDriveModal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="YFilePanel.h">
@@ -74,6 +83,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="YNotifier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NotImplementedException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YChangeDriveModal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

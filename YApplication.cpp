@@ -69,6 +69,9 @@ YApplication::YApplication(short width, short height)
 
 	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height, L"F:/Games/*.*", 0, 0);
 	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/*.*", this->Width / 2, 0);
+
+	this->Left_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
+	this->Right_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
 }
 
 YApplication::~YApplication()
@@ -133,10 +136,10 @@ void YApplication::Run()
 
 	while (this->Can_Run) {
 		
-		if (!ReadConsoleInput(this->Std_Input_Handle, this->Input_Record_Buffer, this->Buffer_Size, &this->Number_Input_Records)) {
+		if (!ReadConsoleInput(this->Std_Input_Handle, this->Input_Record_Buffer, this->Buffer_Size, &this->Input_Records_Number)) {
 			this->ExitWithError("ReadConsoleInput failed");
 		}
-		for (unsigned short i = 0; i < this->Number_Input_Records; i++) {
+		for (unsigned short i = 0; i < this->Input_Records_Number; i++) {
 			switch (this->Input_Record_Buffer[i].EventType)
 			{
 			case KEY_EVENT:

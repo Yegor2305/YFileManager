@@ -1,10 +1,11 @@
 ﻿#include "YFilePanel.h"
 
 YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path,
-						unsigned short pos_x, unsigned short pos_y,
-						BOOL border_left, BOOL border_right,
-						BOOL border_top, BOOL border_bottom, bool double_border,
-						WORD background_attributes, WORD border_attributes, WORD elements_attributes)
+                       unsigned short pos_x, unsigned short pos_y,
+                       BOOL border_left, BOOL border_right,
+                       BOOL border_top, BOOL border_bottom, bool double_border,
+                       WORD background_attributes, WORD border_attributes, WORD elements_attributes):
+	Change_Drive_Button(pos_x + 1, pos_y + 1, L"Drives", 6)
 {
 	this->Pos_X = pos_x;
 	this->Pos_Y = pos_y;
@@ -57,6 +58,8 @@ YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path
 
 	this->Max_Files_In_Column = this->Height - (this->Content_Offset_Top + this->Content_Offset_Bottom);
 	this->FillFiles(path);
+
+	this->Change_Drive_Button.SetBoolOnClick(&this->Drive_Button_Clicked);
 }
 
 YFilePanel::~YFilePanel()
@@ -336,13 +339,29 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 
 	this->DrawTitle(screen_buffer, screen_buffer_info);
 
+	this->Change_Drive_Button.Draw(screen_buffer, screen_buffer_info);
+
 	this->DrawFiles(screen_buffer, screen_buffer_info);
 
 	this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
 }
 
-void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event)
+void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event)
 {
+	Change_Drive_Button.MouseEventHandler(screen_buffer, screen_buffer_info, mouse_event);
+
+	if (this->Drive_Button_Clicked)
+	{
+		this->Drive_Button_Clicked = false;
+
+		std::wstring drive;
+		YChangeDriveModal modal(this->Width - 8, 8, this->Pos_X + 2, this->Pos_Y + this->Content_Offset_Top + 2, screen_buffer,
+			&screen_buffer_info, &drive, this->Std_Input_Handle, this->Input_Record_Buffer,
+			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle);
+		modal.Run();
+		
+
+	}
 
 	if (mouse_event.dwMousePosition.X >= this->Pos_X && mouse_event.dwMousePosition.X <= this->Pos_X + this->Width &&
 		mouse_event.dwMousePosition.Y >= this->Pos_Y + Content_Offset_Top && mouse_event.dwMousePosition.Y < this->Pos_Y + this->Height - Content_Offset_Bottom)
@@ -441,6 +460,11 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREE
 	
 }
 
-void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, KEY_EVENT_RECORD key_event)
+void YFilePanel::SetInputData(HANDLE* std_input_handle, INPUT_RECORD* input_record_buffer, int* buffer_size, DWORD* input_records_number, HANDLE* screen_buffer_handle)
 {
+	this->Std_Input_Handle = std_input_handle;
+	this->Screen_Buffer_Handle = screen_buffer_handle;
+	this->Input_Record_Buffer = input_record_buffer;
+	this->Buffer_Size = buffer_size;
+	this->Input_Records_Number = input_records_number;
 }

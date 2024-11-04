@@ -15,15 +15,6 @@ YFile::YFile(unsigned short x_pos, unsigned short y_pos, const WIN32_FIND_DATA& 
 	this->Max_Length = max_length;
 }
 
-void YFile::Draw(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
-{
-	if (this->Label_Info.Screen_Width == 0)
-		this->Label_Info.Screen_Width = screen_buffer_info.dwSize.X;
-
-	//DrawLabel(screen_buffer, this->Label_Info, this->Name);
-	AsmFunctions::DrawLimitedLabel(screen_buffer, this->Label_Info, this->Name.c_str(), this->Max_Length);
-}
-
 std::wstring YFile::GetName() const
 {
 	return this->Name;

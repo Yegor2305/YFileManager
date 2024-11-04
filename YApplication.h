@@ -6,7 +6,7 @@
 #include "YNotifier.h"
 
 
-class YApplication : public YNotifier
+class YApplication final : public YNotifier
 {
 public:
 	YApplication(short width = 120, short height = 30);
@@ -23,7 +23,7 @@ private:
 	HANDLE Std_Output_Handle, Std_Input_Handle, Screen_Buffer_Handle;
 	CHAR_INFO* Screen_Buffer = nullptr;
 	INPUT_RECORD* Input_Record_Buffer = nullptr;
-	DWORD Old_Console_Mode, Number_Input_Records;
+	DWORD Old_Console_Mode, Input_Records_Number;
 	CONSOLE_SCREEN_BUFFER_INFO Screen_Buffer_Info{};
 	COORD Screen_Buffer_Coord{};
 	YFilePanel* Left_Panel;

@@ -1,11 +1,7 @@
 #pragma once
-#include <stdexcept>
+#include "NotImplementedException.h"
 #include "Main.h"
 
-class NotImplementedException : public std::logic_error {
-public:
-	NotImplementedException() : std::logic_error("Method is not implemented") {}
-};
 
 class BaseWidget
 {
