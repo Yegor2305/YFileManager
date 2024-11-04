@@ -38,8 +38,12 @@ struct OutputPos {
     unsigned short Length;
 };
 
-extern "C" void DrawLineHorizontal(CHAR_INFO* screen_buffer, OutputPos pos, LineInfo line_info);
-extern "C" void DrawLineVertical(CHAR_INFO* screen_buffer, OutputPos pos, LineInfo line_info);
-extern "C" void DrawLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text);
-extern "C" void DrawLimitedLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text, unsigned short length_limit);
-extern "C" void PrintColorPalette(CHAR_INFO* screen_buffer, OutputPos pos, CHAR_INFO symbol_info);
+namespace AsmFunctions
+{
+    extern "C" void DrawLineHorizontal(CHAR_INFO* screen_buffer, OutputPos pos, LineInfo line_info);
+    extern "C" void DrawLineVertical(CHAR_INFO* screen_buffer, OutputPos pos, LineInfo line_info);
+    extern "C" void DrawLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text);
+    extern "C" void DrawLimitedLabel(CHAR_INFO* screen_buffer, LabelInfo label_info, const wchar_t* text, unsigned short length_limit);
+    extern "C" void PrintColorPalette(CHAR_INFO* screen_buffer, OutputPos pos, CHAR_INFO symbol_info);
+}
+

@@ -1,5 +1,7 @@
 #include "YApplication.h"
 
+#include "YNotifier.h"
+
 YApplication::YApplication(short width, short height)
 {
 	// Disable user resizing
@@ -102,7 +104,7 @@ void YApplication::ClearBuffer()
 	}
 }
 
-void YApplication::ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event)
+void YApplication::NotifyMouseEvent(const MOUSE_EVENT_RECORD& mouse_event)
 {
 	this->Left_Panel->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
 	this->Right_Panel->MouseEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, mouse_event);
@@ -111,6 +113,10 @@ void YApplication::ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event)
 		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
 		this->ExitWithError("WriteConsoleOutput failed");
 	}
+}
+
+void YApplication::NotifyKeyEvent(const KEY_EVENT_RECORD& key_event)
+{
 }
 
 void YApplication::ExitWithError(LPCSTR error_message)
@@ -123,7 +129,6 @@ void YApplication::ExitWithError(LPCSTR error_message)
 void YApplication::Run()
 {
 	this->Can_Run = true;
-
 	this->DrawChildren();
 
 	while (this->Can_Run) {
@@ -137,7 +142,7 @@ void YApplication::Run()
 			case KEY_EVENT:
 				break;
 			case MOUSE_EVENT:
-				this->ReportChildrenMouseMovement(this->Input_Record_Buffer[i].Event.MouseEvent);
+				this->NotifyMouseEvent(this->Input_Record_Buffer[i].Event.MouseEvent);
 				break;
 			case WINDOW_BUFFER_SIZE_EVENT:
 				break;
@@ -156,13 +161,13 @@ void YApplication::Run()
 	}
 }
 
-void YApplication::PrintColorPalete(int seconds)
+void YApplication::PrintColorPalette(int seconds)
 {
 	if (this->Can_Run) return;
 
 	CHAR_INFO symbol_info{};
 	symbol_info.Char.UnicodeChar = L'X';
-	PrintColorPalette(this->Screen_Buffer, OutputPos(0, 0, this->Screen_Buffer_Info.dwSize.X,
+	AsmFunctions::PrintColorPalette(this->Screen_Buffer, OutputPos(0, 0, this->Screen_Buffer_Info.dwSize.X,
 		this->Screen_Buffer_Info.dwSize.X), symbol_info);
 
 	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,

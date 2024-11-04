@@ -6,7 +6,7 @@ int main(void)
 
     YApplication app(120, 30);
     app.Run();
-    //app.PrintColorPalete(30);
+    //app.PrintColorPalette(30);
 
     return 1;
 }

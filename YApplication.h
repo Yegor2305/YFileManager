@@ -3,21 +3,22 @@
 #include <vector>
 #include <windows.h>
 #include "YFilePanel.h"
+#include "YNotifier.h"
 
 
-class YApplication
+class YApplication : public YNotifier
 {
 public:
 	YApplication(short width = 120, short height = 30);
-	~YApplication();
-	void Run();
-	void PrintColorPalete(int seconds);
+	~YApplication() override;
+	void Run() override;
+	void PrintColorPalette(int seconds);
 	void SetFPS(unsigned short fps_value);
-	
 private:
 	void DrawChildren();
 	void ClearBuffer();
-	void ReportChildrenMouseMovement(MOUSE_EVENT_RECORD mouse_event);
+	void NotifyMouseEvent(const MOUSE_EVENT_RECORD& mouse_event) override;
+	void NotifyKeyEvent(const KEY_EVENT_RECORD& key_event) override;
 	void ExitWithError(LPCSTR error_message);
 	HANDLE Std_Output_Handle, Std_Input_Handle, Screen_Buffer_Handle;
 	CHAR_INFO* Screen_Buffer = nullptr;

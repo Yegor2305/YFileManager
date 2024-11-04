@@ -29,3 +29,4 @@ void YNotifier::NotifyKeyEvent(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BU
 		observer->KeyEventHandler(screen_buffer, screen_buffer_info, key_event);
 	}
 }
+

@@ -66,14 +66,20 @@ YFilePanel::~YFilePanel()
 
 void YFilePanel::FillFiles(LPCWSTR path)
 {
-	
+	this->Current_Directory_Folders_Count = 0;
+	this->Current_Directory_Files_Count = 0;
+
 	WIN32_FIND_DATAW file_data;
 	HANDLE first_file = FindFirstFile(path, &file_data);
 
+	// Searching for folders
+
 	do
 	{
-		if ((file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY || wcscmp(file_data.cFileName, L"..") == 0) && wcscmp(file_data.cFileName, L".") != 0)
+		if (file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && wcscmp(file_data.cFileName, L".") != 0 
+			&& !(file_data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM))
 		{
+			if (wcscmp(file_data.cFileName, L"..") != 0) this->Current_Directory_Folders_Count += 1;
 			this->Files_List.push_back(new YFile(0, 0, file_data, 0, 0xf5));
 		}
 	} while (FindNextFile(first_file, &file_data));
@@ -89,6 +95,7 @@ void YFilePanel::FillFiles(LPCWSTR path)
 			if (wcscmp(file_data.cFileName, L"..") != 0)
 			{
 				this->Files_List.push_back(new YFile(0, 0, file_data, 0));
+				this->Current_Directory_Files_Count += 1;
 			}
 		}
 	}
@@ -136,7 +143,7 @@ void YFilePanel::DrawTitle(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER
 			this->Pos_Y,
 			screen_buffer_info.dwSize.X,
 			this->Elements_Attributes);
-		DrawLabel(screen_buffer, label_info, final_title.c_str());
+		AsmFunctions::DrawLabel(screen_buffer, label_info, final_title.c_str());
 	}
 	else
 	{
@@ -148,11 +155,50 @@ void YFilePanel::DrawTitle(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER
 			line_info.MediumChar.UnicodeChar = this->Horizontal_Line_Char;
 			line_info.LastChar.UnicodeChar = this->Horizontal_Line_Char;
 			line_info.Attributes = this->Border_Attributes;
-			DrawLineHorizontal(screen_buffer, pos, line_info);
+			AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
 		}
 		LabelInfo label_info(this->Pos_X + this->Width / 2 - this->Path.length() / 2, this->Pos_Y, screen_buffer_info.dwSize.X, this->Elements_Attributes);
-		DrawLabel(screen_buffer, label_info, this->Path.c_str());
+		AsmFunctions::DrawLabel(screen_buffer, label_info, this->Path.c_str());
 	}
+}
+
+void YFilePanel::DrawFileInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, int file_index) const
+{
+	LabelInfo label_info(this->Pos_X + 1, this->Pos_Y + this->Height - 2, screen_buffer_info.dwSize.X, this->Elements_Attributes);
+	OutputPos pos(this->Pos_X + 1, this->Pos_Y + this->Height - 2, screen_buffer_info.dwSize.X, this->Width - 2);
+	LineInfo line_info {{L' '}, {L' '}, {L' '}, this->Background_Attributes};
+
+	AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
+	if (file_index != -1 && Files_List[file_index]->GetName() != L"..")
+	{
+		std::wstring file_name = this->Files_List[file_index]->GetName();
+		if (file_name.length() > this->Width / 2 - 1)
+		{
+			file_name = file_name.substr(file_name.length() - this->Width / 2 + 1);
+		}
+		AsmFunctions::DrawLabel(screen_buffer, label_info, file_name.c_str());
+
+		std::wstring file_info = this->Files_List[file_index]->GetSizeToStr() + L' ' + this->Files_List[file_index]->GetLastWriteTimeToStr();
+		label_info.X_Pos = this->Pos_X + this->Width - file_info.length() - 1;
+		AsmFunctions::DrawLabel(screen_buffer, label_info, file_info.c_str());
+	}
+}
+
+void YFilePanel::DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
+{
+	OutputPos pos(this->Pos_X + 1, this->Pos_Y + this->Height - 1, screen_buffer_info.dwSize.X, this->Width - 2);
+	LineInfo line_info{ {this->Horizontal_Line_Char}, {this->Horizontal_Line_Char}, {this->Horizontal_Line_Char}, this->Border_Attributes };
+
+	AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
+
+	std::wstring current_directory_info =
+		L" Folders: " + std::to_wstring(this->Current_Directory_Folders_Count) +
+		L", files: " + std::to_wstring(this->Current_Directory_Files_Count) + L' ';
+
+	LabelInfo label_info(this->Pos_X + this->Width / 2 - current_directory_info.length() / 2,
+		this->Pos_Y + this->Height - 1, screen_buffer_info.dwSize.X, this->Elements_Attributes);
+
+	AsmFunctions::DrawLabel(screen_buffer, label_info, current_directory_info.c_str());
 }
 
 void YFilePanel::ClearFiles()
@@ -179,7 +225,7 @@ void YFilePanel::ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUF
 			output_pos.Length = this->Pos_X + this->Width - output_pos.X_Pos - 1;
 		}
 
-		DrawLineHorizontal(screen_buffer, output_pos, line_info);
+		AsmFunctions::DrawLineHorizontal(screen_buffer, output_pos, line_info);
 
 		output_pos.Y_Pos += 1;
 	}
@@ -201,7 +247,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	// Top border
 	if (this->Border_Top)
 	{
-		DrawLineHorizontal(screen_buffer, pos, line_info);
+		AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
 	}
 
 	// Bottom border
@@ -212,7 +258,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 		line_info.FirstChar.UnicodeChar = this->Corner_Bottom_Left;
 		line_info.LastChar.UnicodeChar = this->Corner_Bottom_Right;
 
-		DrawLineHorizontal(screen_buffer, pos, line_info);
+		AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
 	}
 
 	// Vertical borders drawing
@@ -227,7 +273,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	
 	if (this->Border_Left)
 	{
-		DrawLineVertical(screen_buffer, pos, line_info);
+		AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
 	}
 
 	// Right border
@@ -236,7 +282,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	{
 		pos.X_Pos = this->Pos_X + this->Width - 1;
 
-		DrawLineVertical(screen_buffer, pos, line_info);
+		AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
 	}
 
 	// Drawing background
@@ -251,7 +297,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	line_info.Attributes = this->Background_Attributes;
 
 	for (int i = 0; i < this->Height - (this->Border_Top + this->Border_Bottom); i++) {
-		DrawLineHorizontal(screen_buffer, pos, line_info);
+		AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
 		pos.Y_Pos++;
 	}
 
@@ -265,7 +311,7 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	line_info.LastChar.UnicodeChar = this->Separator_Right_Char;
 	line_info.Attributes = this->Border_Attributes;
 
-	DrawLineHorizontal(screen_buffer, pos, line_info);
+	AsmFunctions::DrawLineHorizontal(screen_buffer, pos, line_info);
 
 	// Drawing vertical separator
 
@@ -276,21 +322,23 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 	line_info.MediumChar.UnicodeChar = this->Vertical_Line_Char;
 	line_info.LastChar.UnicodeChar = this->Vertical_Separator_Last_Char;
 
-	DrawLineVertical(screen_buffer, pos, line_info);
+	AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
 
 	// Drawing headers
 
-	DrawLabel(screen_buffer, label_info, L"Name");
+	AsmFunctions::DrawLabel(screen_buffer, label_info, L"Name");
 
 	label_info.X_Pos = this->Pos_X + this->Width / 4 * 3 - 2;
 
-	DrawLabel(screen_buffer, label_info, L"Name");
+	AsmFunctions::DrawLabel(screen_buffer, label_info, L"Name");
 
 	// Drawing title
 
 	this->DrawTitle(screen_buffer, screen_buffer_info);
 
 	this->DrawFiles(screen_buffer, screen_buffer_info);
+
+	this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
 }
 
 void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event)
@@ -324,12 +372,12 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREE
 
 		if (this->Hovered_File_Index != -1 && file_index != this->Hovered_File_Index)
 		{
-			this->Files_List[Hovered_File_Index]->Mouse_Leave(screen_buffer, screen_buffer_info);
+			this->Files_List[this->Hovered_File_Index]->MouseLeave(screen_buffer, screen_buffer_info);
 		}
 
 		if (file_index < this->Files_List.size())
 		{
-			this->Files_List[file_index]->Mouse_Enter(screen_buffer, screen_buffer_info);
+			this->Files_List[file_index]->MouseEnter(screen_buffer, screen_buffer_info);
 			this->Hovered_File_Index = file_index;
 		}
 
@@ -354,7 +402,23 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREE
 			this->FillFiles((this->Path + L"*.*").c_str());
 			this->First_File_Index_To_Draw = 0;
 			this->DrawFiles(screen_buffer, screen_buffer_info);
+			this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
 			this->Hovered_File_Index = -1;
+			this->Selected_File_Index = -1;
+		}
+
+		if (mouse_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED && file_index < this->Files_List.size())
+		{
+			this->Files_List[file_index]->Select(screen_buffer, screen_buffer_info);
+
+			if (this->Selected_File_Index != -1 && file_index != this->Selected_File_Index)
+			{
+				this->Files_List[this->Selected_File_Index]->UnSelect(screen_buffer, screen_buffer_info);
+			}
+
+			this->Selected_File_Index = file_index;
+			this->DrawFileInfo(screen_buffer, screen_buffer_info, this->Selected_File_Index);
+
 		}
 
 	}
@@ -362,8 +426,15 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, const CONSOLE_SCREE
 	{
 		if (this->Hovered_File_Index != -1)
 		{
-			this->Files_List[Hovered_File_Index]->Mouse_Leave(screen_buffer, screen_buffer_info);
+			this->Files_List[this->Hovered_File_Index]->MouseLeave(screen_buffer, screen_buffer_info);
 			this->Hovered_File_Index = -1;
+		}
+
+		if (mouse_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED && this->Selected_File_Index != -1)
+		{
+			this->Files_List[this->Selected_File_Index]->UnSelect(screen_buffer, screen_buffer_info);
+			this->Selected_File_Index = -1;
+			this->DrawFileInfo(screen_buffer, screen_buffer_info, this->Selected_File_Index);
 		}
 		
 	}

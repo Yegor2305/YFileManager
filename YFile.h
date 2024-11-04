@@ -1,4 +1,6 @@
 #pragma once
+#include <sstream>
+#include <iomanip>
 #include "Main.h"
 #include "BaseButton.h"
 
@@ -9,8 +11,14 @@ public:
 		WORD attributes = 0xf0, WORD hover_attributes = 0x0f, WORD selected_attributes = 0x0f);
 	void Draw(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) override;
 	std::wstring GetName() const;
+	std::wstring GetSizeToStr() const;
+	std::wstring GetLastWriteTimeToStr() const;
 	bool IsDirectory() const;
 private:
 	bool Is_Directory;
+	double File_Size;
+	SYSTEMTIME LastWriteTime;
+	const char Units_Number = 4;
+	std::wstring Units[4] = { L"B", L"KB", L"MB", L"GB" };
 };
 

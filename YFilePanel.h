@@ -21,6 +21,8 @@ private:
 	void FillFiles(LPCWSTR path);
 	void DrawFiles(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void DrawTitle(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
+	void DrawFileInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, int file_index) const;
+	void DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void ClearFiles();
 	void ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	BOOL Border_Left, Border_Right, Border_Top, Border_Bottom;
@@ -32,8 +34,9 @@ private:
 	Vertical_Separator_First_Char, Vertical_Separator_Last_Char;
 	WORD Background_Attributes, Border_Attributes;
 	std::vector<YFile*> Files_List{};
-	int Hovered_File_Index = -1;
+	int Hovered_File_Index = -1, Selected_File_Index = - 1;
 	unsigned short Content_Offset_Top = 2, Content_Offset_Bottom = 3, Max_Files_In_Column;
+	unsigned short Current_Directory_Folders_Count = 0, Current_Directory_Files_Count = 0;
 	std::wstring Path;
 };
 
