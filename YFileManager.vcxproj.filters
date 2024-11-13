@@ -57,7 +57,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YChangeDriveModal.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Widgets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

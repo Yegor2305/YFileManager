@@ -20,9 +20,38 @@ YChangeDriveModal::YChangeDriveModal(unsigned short width, unsigned short height
 	this->Buffer_Size = buffer_size;
 	this->Input_Records_Number = input_records_number;
 
-	this->Drives.push_back(new YButton(0, 0, L"C:/", 3));
-	this->Drives.push_back(new YButton(0, 0, L"D:/", 3));
-	this->Drives.push_back(new YButton(0, 0, L"F:/", 3));
+	DWORD drives = GetLogicalDrives();
+
+	if (drives == 0)
+	{
+		this->ExitWithError("GetLogicalDrives Error");
+	}
+
+	for (char i = 0; i < 26; ++i) {
+		if (drives & (1 << i))
+		{
+			char driveLetter = 'A' + i;
+
+			std::wstring drivePath = std::wstring(1, driveLetter) + L":/";
+
+			
+			ULARGE_INTEGER freeBytesAvailable, totalNumberOfBytes, totalNumberOfFreeBytes;
+
+			if (GetDiskFreeSpaceEx(drivePath.c_str(), &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes))
+			{
+				auto totalSize = totalNumberOfBytes.QuadPart / (static_cast<unsigned long long>(1024 * 1024) * 1024);
+				auto freeSize = totalNumberOfFreeBytes.QuadPart / (static_cast<unsigned long long>(1024 * 1024) * 1024);
+
+				std::wstring button_text = drivePath + L" | " + std::to_wstring(totalSize) + L" GB | " + std::to_wstring(freeSize) + L" GB ";
+				this->Drives.push_back(new YButton(0, 0, button_text, this->Width / 2, this->Elements_Attributes));
+				
+			}else
+			{
+				this->ExitWithError("GetDiskFreeSpaceEx Error");
+			}
+			
+		}
+	}
 
 	for (auto drive : this->Drives)
 	{
@@ -47,9 +76,22 @@ void YChangeDriveModal::Run()
 			case KEY_EVENT:
 				break;
 			case MOUSE_EVENT:
-				this->NotifyMouseEvent(this->Screen_Buffer, *this->Screen_Buffer_Info, this->Input_Record_Buffer[i].Event.MouseEvent);
+				if (this->Input_Record_Buffer[i].Event.MouseEvent.dwMousePosition.X < this->Pos_X ||
+					this->Input_Record_Buffer[i].Event.MouseEvent.dwMousePosition.X > this->Pos_X + this->Width &&
+					this->Input_Record_Buffer[i].Event.MouseEvent.dwMousePosition.Y < this->Pos_Y ||
+					this->Input_Record_Buffer[i].Event.MouseEvent.dwMousePosition.Y > this->Pos_Y + this->Height)
+				{
+					if (this->Input_Record_Buffer[i].Event.MouseEvent.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED)
+					{
+						this->Can_Run = false;
+					}
+				}else
+				{
+					this->NotifyMouseEvent(this->Screen_Buffer, *this->Screen_Buffer_Info, this->Input_Record_Buffer[i].Event.MouseEvent);
+					
+				}
 				if (!WriteConsoleOutput(*this->Screen_Buffer_Handle, this->Screen_Buffer,
-					this->Screen_Buffer_Info->dwSize, {0, 0}, &this->Screen_Buffer_Info->srWindow)) {
+					this->Screen_Buffer_Info->dwSize, { 0, 0 }, &this->Screen_Buffer_Info->srWindow)) {
 					this->ExitWithError("WriteConsoleOutput failed");
 				}
 				break;
@@ -65,9 +107,11 @@ void YChangeDriveModal::Run()
 		}
 
 		if (!this->Drive_Name_Value->empty())
+		{
+			*this->Drive_Name_Value = this->Drive_Name_Value->substr(0, 3);
 			this->Can_Run = false;
+		}
 
-		//Sleep(3000);
 		Sleep(30);
 	}
 }
@@ -82,6 +126,10 @@ void YChangeDriveModal::Draw()
 		AsmFunctions::DrawLineHorizontal(this->Screen_Buffer, pos, line_info);
 		pos.Y_Pos += 1;
 	}
+
+	LabelInfo label_info(this->Pos_X + (this->Width / 2 - 6), this->Pos_Y, this->Screen_Buffer_Info->dwSize.X, this->Elements_Attributes);
+
+	AsmFunctions::DrawLabel(this->Screen_Buffer, label_info, L"Choose drive:");
 
 	this->DrawDrives();
 
@@ -106,7 +154,7 @@ void YChangeDriveModal::DrawDrives() const
 
 void YChangeDriveModal::ExitWithError(LPCSTR error_message)
 {
-	printf("(%s) - (%d)\n", error_message, GetLastError());
+	printf("(%s) - (%lu)\n", error_message, GetLastError());
 	this->Can_Run = false;
 	ExitProcess(0);
 }

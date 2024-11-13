@@ -59,10 +59,12 @@ void BaseButton::Select(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_IN
 	this->Draw(screen_buffer, screen_buffer_info);
 }
 
-void BaseButton::UnSelect(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+void BaseButton::UnSelect(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, bool need_draw)
 {
 	this->Selected = false;
 	this->Label_Info.Attributes = this->Default_Attributes;
-	this->Draw(screen_buffer, screen_buffer_info);
+
+	if (need_draw)
+		this->Draw(screen_buffer, screen_buffer_info);
 }
 

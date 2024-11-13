@@ -40,3 +40,17 @@ void YNotifier::NotifyKeyEvent(const KEY_EVENT_RECORD& key_event)
 	throw NotImplementedException();
 }
 
+void YNotifier::SetInputData(HANDLE* std_input_handle, INPUT_RECORD* input_record_buffer, int* buffer_size, DWORD* input_records_number, HANDLE* screen_buffer_handle)
+{
+	this->Std_Input_Handle = std_input_handle;
+	this->Screen_Buffer_Handle = screen_buffer_handle;
+	this->Input_Record_Buffer = input_record_buffer;
+	this->Buffer_Size = buffer_size;
+	this->Input_Records_Number = input_records_number;
+}
+
+void YNotifier::Run()
+{
+	throw new NotImplementedException();
+}
+

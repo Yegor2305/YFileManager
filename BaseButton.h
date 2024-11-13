@@ -13,7 +13,7 @@ public:
 	virtual void MouseEnter(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
 	virtual void MouseLeave(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
 	virtual void Select(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
-	virtual void UnSelect(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
+	virtual void UnSelect(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, bool need_draw = true);
 
 protected:
 	bool Hovered = false, Selected = false;

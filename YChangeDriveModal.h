@@ -16,11 +16,11 @@ private:
 	void Draw();
 	void DrawDrives() const;
 	void ExitWithError(LPCSTR error_message);
-	HANDLE* Std_Input_Handle = nullptr;
+	/*HANDLE* Std_Input_Handle = nullptr;
 	HANDLE* Screen_Buffer_Handle = nullptr;
 	INPUT_RECORD* Input_Record_Buffer = nullptr;
 	int* Buffer_Size = nullptr;
-	DWORD* Input_Records_Number = nullptr;
+	DWORD* Input_Records_Number = nullptr;*/
 	bool Can_Run = false;
 	CHAR_INFO* Screen_Buffer;
 	CONSOLE_SCREEN_BUFFER_INFO* Screen_Buffer_Info;

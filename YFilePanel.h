@@ -5,7 +5,7 @@
 #include "YChangeDriveModal.h"
 #include <vector>
 
-class YFilePanel : public BaseWidget, public YObserver
+class YFilePanel : public BaseWidget, public YObserver, public YNotifier
 {
 public:
 	YFilePanel(unsigned short width, unsigned short height, LPCWSTR path,
@@ -16,20 +16,16 @@ public:
 	~YFilePanel() override;
 	void Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) override;
 	void MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event) override;
-	void SetInputData(HANDLE* std_input_handle, INPUT_RECORD* input_record_buffer, int* buffer_size, DWORD* input_records_number, HANDLE* screen_buffer_handle);
 private:
 	void FillFiles(LPCWSTR path);
 	void DrawFiles(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void DrawTitle(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void DrawFileInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, int file_index) const;
 	void DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
+	void DrawVerticalSeparator(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void ClearFiles();
 	void ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
-	HANDLE* Std_Input_Handle = nullptr;
-	HANDLE* Screen_Buffer_Handle = nullptr;
-	INPUT_RECORD* Input_Record_Buffer = nullptr;
-	int* Buffer_Size = nullptr;
-	DWORD* Input_Records_Number = nullptr;
+	void ChangeDirectory(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
 	YButton Change_Drive_Button;
 	bool Drive_Button_Clicked = false;
 	BOOL Border_Left, Border_Right, Border_Top, Border_Bottom;

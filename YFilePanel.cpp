@@ -103,7 +103,7 @@ void YFilePanel::FillFiles(LPCWSTR path)
 		}
 	}
 
-	if (this->Files_List.size() > this->Max_Files_In_Column * 2) this->Scrollable = true;
+	this->Scrollable = this->Files_List.size() > this->Max_Files_In_Column * 2;
 
 }
 
@@ -204,6 +204,19 @@ void YFilePanel::DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOL
 	AsmFunctions::DrawLabel(screen_buffer, label_info, current_directory_info.c_str());
 }
 
+void YFilePanel::DrawVerticalSeparator(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
+{
+	OutputPos pos(this->Pos_X + this->Width / 2, this->Pos_Y + 1, screen_buffer_info.dwSize.X, this->Pos_Y + this->Height - 2);
+	LineInfo line_info;
+
+	line_info.FirstChar.UnicodeChar = this->Vertical_Line_Char;
+	line_info.MediumChar.UnicodeChar = this->Vertical_Line_Char;
+	line_info.LastChar.UnicodeChar = this->Vertical_Separator_Last_Char;
+	line_info.Attributes = this->Border_Attributes;
+
+	AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
+}
+
 void YFilePanel::ClearFiles()
 {
 	for (YFile* ptr : this->Files_List)
@@ -232,6 +245,19 @@ void YFilePanel::ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUF
 
 		output_pos.Y_Pos += 1;
 	}
+}
+
+void YFilePanel::ChangeDirectory(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+{
+	this->ClearColumns(screen_buffer, screen_buffer_info);
+	this->ClearFiles();
+	this->DrawTitle(screen_buffer, screen_buffer_info);
+	this->FillFiles((this->Path + L"*.*").c_str());
+	this->First_File_Index_To_Draw = 0;
+	this->DrawFiles(screen_buffer, screen_buffer_info);
+	this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
+	this->Hovered_File_Index = -1;
+	this->Selected_File_Index = -1;
 }
 
 void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
@@ -318,14 +344,15 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 
 	// Drawing vertical separator
 
-	pos.X_Pos = this->Pos_X + this->Width / 2;
+	this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
+	/*pos.X_Pos = this->Pos_X + this->Width / 2;
 	pos.Y_Pos = this->Pos_Y;
 	pos.Length = this->Pos_Y + this->Height - 2;
 	line_info.FirstChar.UnicodeChar = this->Vertical_Separator_First_Char;
 	line_info.MediumChar.UnicodeChar = this->Vertical_Line_Char;
 	line_info.LastChar.UnicodeChar = this->Vertical_Separator_Last_Char;
 
-	AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
+	AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);*/
 
 	// Drawing headers
 
@@ -348,20 +375,6 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 
 void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event)
 {
-	Change_Drive_Button.MouseEventHandler(screen_buffer, screen_buffer_info, mouse_event);
-
-	if (this->Drive_Button_Clicked)
-	{
-		this->Drive_Button_Clicked = false;
-
-		std::wstring drive;
-		YChangeDriveModal modal(this->Width - 8, 8, this->Pos_X + 2, this->Pos_Y + this->Content_Offset_Top + 2, screen_buffer,
-			&screen_buffer_info, &drive, this->Std_Input_Handle, this->Input_Record_Buffer,
-			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle);
-		modal.Run();
-		
-
-	}
 
 	if (mouse_event.dwMousePosition.X >= this->Pos_X && mouse_event.dwMousePosition.X <= this->Pos_X + this->Width &&
 		mouse_event.dwMousePosition.Y >= this->Pos_Y + Content_Offset_Top && mouse_event.dwMousePosition.Y < this->Pos_Y + this->Height - Content_Offset_Bottom)
@@ -415,15 +428,7 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 				}
 			}
 
-			this->ClearColumns(screen_buffer, screen_buffer_info);
-			this->ClearFiles();
-			this->DrawTitle(screen_buffer, screen_buffer_info);
-			this->FillFiles((this->Path + L"*.*").c_str());
-			this->First_File_Index_To_Draw = 0;
-			this->DrawFiles(screen_buffer, screen_buffer_info);
-			this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
-			this->Hovered_File_Index = -1;
-			this->Selected_File_Index = -1;
+			this->ChangeDirectory(screen_buffer, screen_buffer_info);
 		}
 
 		if (mouse_event.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED && file_index < this->Files_List.size())
@@ -432,7 +437,11 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 
 			if (this->Selected_File_Index != -1 && file_index != this->Selected_File_Index)
 			{
-				this->Files_List[this->Selected_File_Index]->UnSelect(screen_buffer, screen_buffer_info);
+				bool need_draw = true;
+				if (this->Selected_File_Index < this->First_File_Index_To_Draw)
+					need_draw = false;
+					
+				this->Files_List[this->Selected_File_Index]->UnSelect(screen_buffer, screen_buffer_info, need_draw);
 			}
 
 			this->Selected_File_Index = file_index;
@@ -457,14 +466,30 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 		}
 		
 	}
-	
-}
 
-void YFilePanel::SetInputData(HANDLE* std_input_handle, INPUT_RECORD* input_record_buffer, int* buffer_size, DWORD* input_records_number, HANDLE* screen_buffer_handle)
-{
-	this->Std_Input_Handle = std_input_handle;
-	this->Screen_Buffer_Handle = screen_buffer_handle;
-	this->Input_Record_Buffer = input_record_buffer;
-	this->Buffer_Size = buffer_size;
-	this->Input_Records_Number = input_records_number;
+	Change_Drive_Button.MouseEventHandler(screen_buffer, screen_buffer_info, mouse_event);
+
+	if (this->Drive_Button_Clicked)
+	{
+		this->Drive_Button_Clicked = false;
+
+		std::wstring drive;
+		YChangeDriveModal modal(this->Width - 8, 8, this->Pos_X + 2, this->Pos_Y + this->Content_Offset_Top + 2, screen_buffer,
+			&screen_buffer_info, &drive, this->Std_Input_Handle, this->Input_Record_Buffer,
+			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle, 0x70, 0x70);
+		modal.Run();
+
+		this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
+
+		if (drive.empty() || this->Path == drive)
+		{
+			this->DrawFiles(screen_buffer, screen_buffer_info);
+		}else
+		{
+		
+			this->Path = drive;
+			this->ChangeDirectory(screen_buffer, screen_buffer_info);
+			
+		}
+	}
 }
