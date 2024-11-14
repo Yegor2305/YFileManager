@@ -1,6 +1,6 @@
 #pragma once
 #include "YObserver.h"
-#include  "BaseButton.h"
+#include "BaseButton.h"
 
 class YButton : public YObserver, public BaseButton
 {

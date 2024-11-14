@@ -67,11 +67,16 @@ YApplication::YApplication(short width, short height)
 	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
 	this->Input_Record_Buffer = new INPUT_RECORD[this->Buffer_Size];
 
-	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height, L"F:/Games/*.*", 0, 0);
-	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/*.*", this->Width / 2, 0);
+	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/Users/Yegor/Desktop/*.*", 0, 0);
+	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/Users/Yegor/Desktop/*.*", this->Width / 2, 0);
 
 	this->Left_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
 	this->Right_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
+
+	this->File_To_Copy_Cut_Path = new std::wstring;
+	this->Cut = new bool(false);
+	this->Left_Panel->SetCopyPastData(this->File_To_Copy_Cut_Path, this->Cut);
+	this->Right_Panel->SetCopyPastData(this->File_To_Copy_Cut_Path, this->Cut);
 }
 
 YApplication::~YApplication()
@@ -120,6 +125,13 @@ void YApplication::NotifyMouseEvent(const MOUSE_EVENT_RECORD& mouse_event)
 
 void YApplication::NotifyKeyEvent(const KEY_EVENT_RECORD& key_event)
 {
+	this->Left_Panel->KeyEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, key_event);
+	this->Right_Panel->KeyEventHandler(this->Screen_Buffer, this->Screen_Buffer_Info, key_event);
+
+	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
+		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
+		this->ExitWithError("WriteConsoleOutput failed");
+	}
 }
 
 void YApplication::ExitWithError(LPCSTR error_message)
@@ -143,6 +155,7 @@ void YApplication::Run()
 			switch (this->Input_Record_Buffer[i].EventType)
 			{
 			case KEY_EVENT:
+				this->NotifyKeyEvent(this->Input_Record_Buffer[i].Event.KeyEvent);
 				break;
 			case MOUSE_EVENT:
 				this->NotifyMouseEvent(this->Input_Record_Buffer[i].Event.MouseEvent);

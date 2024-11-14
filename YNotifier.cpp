@@ -49,6 +49,12 @@ void YNotifier::SetInputData(HANDLE* std_input_handle, INPUT_RECORD* input_recor
 	this->Input_Records_Number = input_records_number;
 }
 
+void YNotifier::SetCopyPastData(std::wstring* file_to_copy_cut_path, bool* cut)
+{
+	this->File_To_Copy_Cut_Path = file_to_copy_cut_path;
+	this->Cut = cut;
+}
+
 void YNotifier::Run()
 {
 	throw new NotImplementedException();
