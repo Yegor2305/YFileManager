@@ -13,18 +13,8 @@ public:
 		WORD background_attributes = 0xf0, WORD elements_attributes = 0xf0);
 	void Run() override;
 private:
-	void Draw();
+	void Draw() override;
 	void DrawDrives() const;
-	void ExitWithError(LPCSTR error_message);
-	/*HANDLE* Std_Input_Handle = nullptr;
-	HANDLE* Screen_Buffer_Handle = nullptr;
-	INPUT_RECORD* Input_Record_Buffer = nullptr;
-	int* Buffer_Size = nullptr;
-	DWORD* Input_Records_Number = nullptr;*/
-	bool Can_Run = false;
-	CHAR_INFO* Screen_Buffer;
-	CONSOLE_SCREEN_BUFFER_INFO* Screen_Buffer_Info;
-	WORD Background_Attributes;
 	std::wstring* Drive_Name_Value = nullptr;
 	std::vector<YButton*> Drives;
 };

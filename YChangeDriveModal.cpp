@@ -151,10 +151,3 @@ void YChangeDriveModal::DrawDrives() const
 		pos.Y_Pos += 1;
 	}
 }
-
-void YChangeDriveModal::ExitWithError(LPCSTR error_message)
-{
-	printf("(%s) - (%lu)\n", error_message, GetLastError());
-	this->Can_Run = false;
-	ExitProcess(0);
-}

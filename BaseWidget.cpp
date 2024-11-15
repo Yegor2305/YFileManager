@@ -4,3 +4,8 @@ void BaseWidget::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 {
 	throw NotImplementedException();
 }
+
+void BaseWidget::Draw()
+{
+	throw NotImplementedException();
+}

@@ -1,11 +1,12 @@
 ﻿#include "YFilePanel.h"
+#include <__msvc_filebuf.hpp>
 
 YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path,
                        unsigned short pos_x, unsigned short pos_y,
                        BOOL border_left, BOOL border_right,
                        BOOL border_top, BOOL border_bottom, bool double_border,
                        WORD background_attributes, WORD border_attributes, WORD elements_attributes):
-	Change_Drive_Button(pos_x + 1, pos_y + 1, L"Drives", 6)
+	Change_Drive_Button(pos_x + 1, pos_y + 1, L"Drives", 6), Refresh_Button(pos_x + width - 4, pos_y + 1, L"Upd", 3)
 {
 	this->Pos_X = pos_x;
 	this->Pos_Y = pos_y;
@@ -60,6 +61,7 @@ YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path
 	this->FillFiles(path);
 
 	this->Change_Drive_Button.SetBoolOnClick(&this->Drive_Button_Clicked);
+	this->Refresh_Button.SetBoolOnClick(&this->Refresh_Button_Clicked);
 }
 
 YFilePanel::~YFilePanel()
@@ -230,9 +232,13 @@ void YFilePanel::ClearFiles()
 void YFilePanel::Refresh(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
 {
 	this->File_To_Copy_Cut_Path->clear();
+	this->ClearColumns(screen_buffer, screen_buffer_info);
 	this->ClearFiles();
 	this->FillFiles((this->Path + L"*.*").c_str());
+	this->First_File_Index_To_Draw = 0;
 	this->DrawFiles(screen_buffer, screen_buffer_info);
+	this->Hovered_File_Index = -1;
+	this->Selected_File_Index = -1;
 }
 
 void YFilePanel::ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
@@ -368,6 +374,8 @@ void YFilePanel::Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& scre
 
 	this->Change_Drive_Button.Draw(screen_buffer, screen_buffer_info);
 
+	this->Refresh_Button.Draw(screen_buffer, screen_buffer_info);
+
 	this->DrawFiles(screen_buffer, screen_buffer_info);
 
 	this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
@@ -491,6 +499,14 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 			this->ChangeDirectory(screen_buffer, screen_buffer_info);
 		}
 	}
+
+	Refresh_Button.MouseEventHandler(screen_buffer, screen_buffer_info, mouse_event);
+
+	if (this->Refresh_Button_Clicked)
+	{
+		this->Refresh_Button_Clicked = false;
+		this->Refresh(screen_buffer, screen_buffer_info);
+	}
 }
 
 void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, KEY_EVENT_RECORD key_event)
@@ -502,6 +518,7 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 
 	if (left_alt_pressed &&( key_event.wVirtualKeyCode == 'C' || key_event.wVirtualKeyCode == 'X'))
 	{
+
 		if (this->Selected_File_Index == -1) return;
 		
 		*this->File_To_Copy_Cut_Path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
@@ -514,22 +531,70 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 	{
 		if (this->File_To_Copy_Cut_Path->empty()) return;
 
-		std::wstring destination_path = this->Path + this->File_To_Copy_Cut_Path->substr(this->File_To_Copy_Cut_Path->find_last_of(L'/') + 1);
+		std::wstring destination_path = this->Path;
+		std::replace(destination_path.begin(), destination_path.end(), L'/', L'\\');
 
-		if (!*this->Cut)
-		{
-			if (CopyFile(this->File_To_Copy_Cut_Path->c_str(), destination_path.c_str(), true))
-			{
-				this->Refresh(screen_buffer, screen_buffer_info);
-			}
-				
-		}else
-		{
-			if (MoveFile(this->File_To_Copy_Cut_Path->c_str(), destination_path.c_str()))
-			{
-				this->Refresh(screen_buffer, screen_buffer_info);
-			}
-		}
+		SHFILEOPSTRUCT file_op;
+		wchar_t from[MAX_PATH];
+		wchar_t to[MAX_PATH];
+
+		wcsncpy_s(from, this->File_To_Copy_Cut_Path->c_str(), MAX_PATH);
+		from[this->File_To_Copy_Cut_Path->length() + 1] = 0;
+		wcsncpy_s(to, destination_path.c_str(), MAX_PATH);
+		to[destination_path.length() + 1] = 0;
+
+		file_op.hwnd = nullptr;
+		file_op.pFrom = from;
+		file_op.pTo = to;
+		file_op.fFlags = FOF_ALLOWUNDO;
+		file_op.fAnyOperationsAborted = FALSE;
+		file_op.hNameMappings = nullptr;
+
+		file_op.wFunc = !*this->Cut ? FO_COPY : FO_MOVE;
+		
+		SHFileOperationW(&file_op);
+		this->Refresh(screen_buffer, screen_buffer_info);
 
 	}
+
+	if (key_event.wVirtualKeyCode == VK_DELETE)
+	{
+		if (this->Selected_File_Index == -1) return;
+
+		YConfirmModal confirm(this->Pos_X, this->Pos_Y, this->Width, this->Height, new std::wstring(L"Are you sure to delete file?"), screen_buffer,
+			&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
+			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle, 0x70, 0x70);
+
+		if (confirm.Confirm())
+		{
+			SHFILEOPSTRUCT file_op;
+			std::wstring file_path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
+
+			wchar_t from[MAX_PATH];
+			wcsncpy_s(from, file_path.c_str(), MAX_PATH);
+			from[file_path.length() + 1] = 0;
+
+			file_op.hwnd = NULL;
+			file_op.wFunc = FO_DELETE;
+			file_op.pFrom = from;
+			file_op.pTo = NULL;
+			file_op.fFlags = FOF_ALLOWUNDO;
+
+			SHFileOperationW(&file_op);
+			this->Refresh(screen_buffer, screen_buffer_info);
+		}else
+		{
+			this->DrawFiles(screen_buffer, screen_buffer_info);
+		}
+
+		this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
+		
+		
+	}
+}
+
+void YFilePanel::SetCopyPasteData(std::wstring* file_to_copy_cut_path, bool* cut)
+{
+	this->File_To_Copy_Cut_Path = file_to_copy_cut_path;
+	this->Cut = cut;
 }

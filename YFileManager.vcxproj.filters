@@ -59,6 +59,9 @@
     <ClCompile Include="YChangeDriveModal.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="YConfirmModal.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="YFilePanel.h">
@@ -92,6 +95,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="YChangeDriveModal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YConfirmModal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,10 @@
 #include "BaseWidget.h"
 #include "YFile.h"
 #include "YChangeDriveModal.h"
+#include "YConfirmModal.h"
 #include <vector>
+#include <shlobj.h>
+#include <algorithm>
 
 class YFilePanel : public BaseWidget, public YObserver, public YNotifier
 {
@@ -17,6 +20,7 @@ public:
 	void Draw(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) override;
 	void MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, MOUSE_EVENT_RECORD mouse_event) override;
 	void KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, KEY_EVENT_RECORD key_event) override;
+	void SetCopyPasteData(std::wstring* file_to_copy_cut_path, bool* cut);
 private:
 	void FillFiles(LPCWSTR path);
 	void DrawFiles(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
@@ -28,8 +32,8 @@ private:
 	void Refresh(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
 	void ClearColumns(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const;
 	void ChangeDirectory(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info);
-	YButton Change_Drive_Button;
-	bool Drive_Button_Clicked = false;
+	YButton Change_Drive_Button, Refresh_Button;
+	bool Drive_Button_Clicked = false, Refresh_Button_Clicked = false;
 	BOOL Border_Left, Border_Right, Border_Top, Border_Bottom;
 	bool Double_Border;
 	bool Scrollable = false;
@@ -43,5 +47,7 @@ private:
 	unsigned short Content_Offset_Top = 2, Content_Offset_Bottom = 3, Max_Files_In_Column;
 	unsigned short Current_Directory_Folders_Count = 0, Current_Directory_Files_Count = 0;
 	std::wstring Path;
+	std::wstring* File_To_Copy_Cut_Path = nullptr;
+	bool* Cut = nullptr;
 };
 

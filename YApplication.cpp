@@ -73,10 +73,8 @@ YApplication::YApplication(short width, short height)
 	this->Left_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
 	this->Right_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
 
-	this->File_To_Copy_Cut_Path = new std::wstring;
-	this->Cut = new bool(false);
-	this->Left_Panel->SetCopyPastData(this->File_To_Copy_Cut_Path, this->Cut);
-	this->Right_Panel->SetCopyPastData(this->File_To_Copy_Cut_Path, this->Cut);
+	this->Left_Panel->SetCopyPasteData(&this->File_To_Copy_Paste, &this->Cut);
+	this->Right_Panel->SetCopyPasteData(&this->File_To_Copy_Paste, &this->Cut);
 }
 
 YApplication::~YApplication()
@@ -132,13 +130,6 @@ void YApplication::NotifyKeyEvent(const KEY_EVENT_RECORD& key_event)
 		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
 		this->ExitWithError("WriteConsoleOutput failed");
 	}
-}
-
-void YApplication::ExitWithError(LPCSTR error_message)
-{
-	printf("(%s) - (%d)\n", error_message, GetLastError());
-	this->Can_Run = false;
-	ExitProcess(0);
 }
 
 void YApplication::Run()
