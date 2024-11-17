@@ -17,6 +17,7 @@ YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path
 	this->Double_Border = double_border;
 	this->Background_Attributes = background_attributes;
 	this->Border_Attributes = border_attributes;
+	//this->Elements_Attributes = 0x84f0;
 	this->Elements_Attributes = elements_attributes;
 
 	if (this->Double_Border)
@@ -208,7 +209,7 @@ void YFilePanel::DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOL
 
 void YFilePanel::DrawVerticalSeparator(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
 {
-	OutputPos pos(this->Pos_X + this->Width / 2, this->Pos_Y + 1, screen_buffer_info.dwSize.X, this->Pos_Y + this->Height - 2);
+	OutputPos pos(this->Pos_X + this->Width / 2, this->Pos_Y, screen_buffer_info.dwSize.X, this->Pos_Y + this->Height - 2);
 	LineInfo line_info;
 
 	line_info.FirstChar.UnicodeChar = this->Vertical_Line_Char;
@@ -516,17 +517,6 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 
 	bool left_alt_pressed = key_event.dwControlKeyState & LEFT_ALT_PRESSED;
 
-	if (left_alt_pressed &&( key_event.wVirtualKeyCode == 'C' || key_event.wVirtualKeyCode == 'X'))
-	{
-
-		if (this->Selected_File_Index == -1) return;
-		
-		*this->File_To_Copy_Cut_Path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
-
-		*this->Cut = key_event.wVirtualKeyCode == 'X';
-
-	}
-
 	if (left_alt_pressed && key_event.wVirtualKeyCode == 'V')
 	{
 		if (this->File_To_Copy_Cut_Path->empty()) return;
@@ -551,16 +541,24 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 		file_op.hNameMappings = nullptr;
 
 		file_op.wFunc = !*this->Cut ? FO_COPY : FO_MOVE;
-		
+
 		SHFileOperationW(&file_op);
 		this->Refresh(screen_buffer, screen_buffer_info);
 
 	}
 
+	if (this->Selected_File_Index == -1) return;
+
+	if (left_alt_pressed &&( key_event.wVirtualKeyCode == 'C' || key_event.wVirtualKeyCode == 'X'))
+	{
+		*this->File_To_Copy_Cut_Path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
+
+		*this->Cut = key_event.wVirtualKeyCode == 'X';
+
+	}
+
 	if (key_event.wVirtualKeyCode == VK_DELETE)
 	{
-		if (this->Selected_File_Index == -1) return;
-
 		YConfirmModal confirm(this->Pos_X, this->Pos_Y, this->Width, this->Height, new std::wstring(L"Are you sure to delete file?"), screen_buffer,
 			&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
 			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle, 0x70, 0x70);
@@ -590,6 +588,42 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 		this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
 		
 		
+	}
+
+	if (key_event.wVirtualKeyCode == 'R')
+	{
+		unsigned short input_box_x = this->Files_List[this->Selected_File_Index]->GetPosX();
+		unsigned short input_box_y = this->Files_List[this->Selected_File_Index]->GetPosY();
+		unsigned short input_box_width = this->Width / 2;
+		if (this->First_File_Index_To_Draw + this->Selected_File_Index + 1 > this->Max_Files_In_Column) input_box_width -= 1;
+
+		YInputBox input_box(input_box_width, input_box_x, input_box_y, this->Files_List[this->Selected_File_Index]->GetName(), screen_buffer,
+			&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
+			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle);
+		std::wstring new_file_name = input_box.GetUserInput();
+		if (new_file_name != this->Files_List[this->Selected_File_Index]->GetName())
+		{
+			SHFILEOPSTRUCT file_op;
+			std::wstring file_path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
+			std::wstring new_file_path = this->Path + new_file_name;
+
+			std::replace(new_file_path.begin(), new_file_path.end(), L'/', L'\\');
+
+			wchar_t from[MAX_PATH];
+			wchar_t to[MAX_PATH];
+			wcsncpy_s(from, file_path.c_str(), MAX_PATH);
+			from[file_path.length() + 1] = 0;
+			wcsncpy_s(to, new_file_path.c_str(), MAX_PATH);
+			to[new_file_path.length() + 1] = 0;
+
+			file_op.wFunc = FO_RENAME;
+			file_op.pFrom = from;
+			file_op.pTo = to;
+			file_op.fFlags = FOF_ALLOWUNDO;
+
+			SHFileOperationW(&file_op);
+		}
+		this->Refresh(screen_buffer, screen_buffer_info);
 	}
 }
 

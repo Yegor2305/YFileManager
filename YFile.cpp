@@ -48,6 +48,16 @@ std::wstring YFile::GetLastWriteTimeToStr() const
 	return wss.str();
 }
 
+unsigned short YFile::GetPosX() const
+{
+	return this->Label_Info.X_Pos;
+}
+
+unsigned short YFile::GetPosY() const
+{
+	return this->Label_Info.Y_Pos;
+}
+
 bool YFile::IsDirectory() const
 {
 	return this->Is_Directory;

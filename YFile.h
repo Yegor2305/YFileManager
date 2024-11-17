@@ -12,6 +12,8 @@ public:
 	std::wstring GetName() const;
 	std::wstring GetSizeToStr() const;
 	std::wstring GetLastWriteTimeToStr() const;
+	unsigned short GetPosX() const;
+	unsigned short GetPosY() const;
 	bool IsDirectory() const;
 private:
 	bool Is_Directory;

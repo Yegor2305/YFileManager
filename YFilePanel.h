@@ -4,6 +4,7 @@
 #include "YFile.h"
 #include "YChangeDriveModal.h"
 #include "YConfirmModal.h"
+#include "YInputBox.h"
 #include <vector>
 #include <shlobj.h>
 #include <algorithm>

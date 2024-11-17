@@ -138,6 +138,7 @@
     <ClCompile Include="YButton.cpp" />
     <ClCompile Include="YChangeDriveModal.cpp" />
     <ClCompile Include="YConfirmModal.cpp" />
+    <ClCompile Include="YInputBox.cpp" />
     <ClCompile Include="YNotifier.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="YFilePanel.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="YButton.h" />
     <ClInclude Include="YChangeDriveModal.h" />
     <ClInclude Include="YConfirmModal.h" />
+    <ClInclude Include="YInputBox.h" />
     <ClInclude Include="YNotifier.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="YFilePanel.h" />
