@@ -23,7 +23,7 @@ private:
 
 	std::wstring Current_Text;
 	unsigned short First_Char_To_Draw_Index;
-	unsigned short Cursor_X_Position;
+	unsigned short Cursor_X_Position = 0;
 	unsigned short Text_Offset = 2;
 };
 

@@ -88,9 +88,6 @@ void YInputBox::Run()
 						this->SetCursorPosition(this->Input_Record_Buffer[i].Event.MouseEvent.dwMousePosition.X);
 					}
 				}
-				
-				
-				
 				break;
 			case WINDOW_BUFFER_SIZE_EVENT:
 				break;
@@ -193,11 +190,6 @@ std::wstring YInputBox::GetTextWithSpaces()
 		result.append(this->Width - this->Current_Text.length(), L' ');
 		return result;
 	}
-	/*std::wstring result = this->Current_Text.substr(this->First_Char_To_Draw_Index);
-	if (result.length() < this->Width - this->Text_Offset)
-		result.append(this->Width - result.length(), L' ');
-	return result;*/
-
 
 	return this->Current_Text;
 }
