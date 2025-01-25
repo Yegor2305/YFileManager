@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BaseButton" Collapsed="true">
+    <Position X="13.75" Y="2" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAEIAAABAAAoAAAgAEAARAAAQAAAAAAAUAQAEIAAI=</HashCode>
+      <FileName>BaseButton.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BaseWidget" Collapsed="true">
+    <Position X="15" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQABAAAAgAAAAAAAEACAAQAAAAAAAABEAAAAAA=</HashCode>
+      <FileName>BaseWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NotImplementedException" Collapsed="true">
+    <Position X="20.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>NotImplementedException.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YApplication" Collapsed="true">
+    <Position X="9.25" Y="3.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>gAQEBAAABAAhQAAAgAgIBEIABFAEEEKIABBAAAAgAAI=</HashCode>
+      <FileName>YApplication.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YButton" Collapsed="true">
+    <Position X="17.25" Y="4" Width="2.5" />
+    <InheritanceLine Type="BaseButton" ManuallyRouted="true">
+      <Path>
+        <Point X="14.125" Y="2.562" />
+        <Point X="14.125" Y="3.225" />
+        <Point X="18.5" Y="3.225" />
+        <Point X="18.5" Y="4" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>IAAAACBAAAAAAAAAAAQgAAAAAAAAAAQAAAAgAAAAAAA=</HashCode>
+      <FileName>YButton.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YChangeDriveModal" Collapsed="true">
+    <Position X="9.5" Y="10.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAgAAAAAAAAAAAABAgAAAAAAAACABAAI=</HashCode>
+      <FileName>YChangeDriveModal.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YConfirmModal" Collapsed="true">
+    <Position X="9.5" Y="8.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAQAAQAgAAAAAJAAAAAAABAAgAAAABCAAAAAI=</HashCode>
+      <FileName>YConfirmModal.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YFile" Collapsed="true">
+    <Position X="17.25" Y="2" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAIAEAAAAAAAAAAAAAAIAAAAABEAABAAAAdAA=</HashCode>
+      <FileName>YFile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YFilePanel" Collapsed="true">
+    <Position X="17.5" Y="8" Width="2.25" />
+    <InheritanceLine Type="BaseWidget">
+      <InheritanceModifierLabel ManuallyPlaced="true">
+        <Position X="0.368" Y="0.127" />
+      </InheritanceModifierLabel>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>BBQNCBAQCBFAEpoIzAQNAAeAIAgAjQIACDCBAAZABAA=</HashCode>
+      <FileName>YFilePanel.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YInputBox" Collapsed="true">
+    <Position X="9.25" Y="5.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>gQgAAAAAAIAAAgAAAABAAQAAIAAAAAAQIAAAAAAAAII=</HashCode>
+      <FileName>YInputBox.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YNotifier" Collapsed="true">
+    <Position X="13.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAEAAAAAAhggAAAAAgIAAAAAAAAUAIAABAACAAACQI=</HashCode>
+      <FileName>YNotifier.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="YObserver" Collapsed="true">
+    <Position X="17.25" Y="5.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAARAAAAAIAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>YObserver.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

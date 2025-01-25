@@ -67,8 +67,8 @@ YApplication::YApplication(short width, short height)
 	memset(this->Screen_Buffer, 0, this->Buffer_Size * sizeof(CHAR_INFO));
 	this->Input_Record_Buffer = new INPUT_RECORD[this->Buffer_Size];
 
-	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/Users/Yegor/Desktop/*.*", 0, 0);
-	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height, L"C:/Users/Yegor/Desktop/*.*", this->Width / 2, 0);
+	this->Left_Panel = new YFilePanel(this->Width / 2, this->Height - 1, L"C:/Users/Yegor/Desktop/*.*", 0, 0);
+	this->Right_Panel = new YFilePanel(this->Width / 2, this->Height - 1, L"C:/Users/Yegor/Desktop/*.*", this->Width / 2, 0);
 
 	this->Left_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
 	this->Right_Panel->SetInputData(&this->Std_Input_Handle, this->Input_Record_Buffer, &this->Buffer_Size, &this->Input_Records_Number, &this->Screen_Buffer_Handle);
@@ -100,6 +100,35 @@ void YApplication::DrawChildren()
 		this->ExitWithError("WriteConsoleOutput failed");
 	}
 
+}
+
+void YApplication::DrawBottomHelper()
+{
+	WORD shortcut_label_attributes = 0x0f;
+	WORD meaning_attributes = 0xb0;
+
+	LabelInfo label_info(
+		0,
+		this->Height - 1,
+		this->Screen_Buffer_Info.dwSize.X,
+		shortcut_label_attributes
+		);
+
+	for (unsigned short i = 0; i < this->Shortcuts_Count; i++)
+	{
+		label_info.Attributes = shortcut_label_attributes;
+		AsmFunctions::DrawLabel(this->Screen_Buffer, label_info, this->Shortcuts[i].Shortcut_Label.c_str());
+		label_info.X_Pos += this->Shortcuts[i].Shortcut_Label.length() + 1;
+		label_info.Attributes = meaning_attributes;
+		AsmFunctions::DrawLabel(this->Screen_Buffer, label_info, this->Shortcuts[i].Meaning.c_str());
+		label_info.X_Pos += this->Shortcuts[i].Meaning.length() + 1;
+	}
+
+	if (!WriteConsoleOutput(this->Screen_Buffer_Handle, this->Screen_Buffer,
+		this->Screen_Buffer_Info.dwSize, this->Screen_Buffer_Coord, &this->Screen_Buffer_Info.srWindow)) {
+		this->ExitWithError("WriteConsoleOutput failed");
+	}
+	
 }
 
 void YApplication::ClearBuffer()
@@ -136,6 +165,7 @@ void YApplication::Run()
 {
 	this->Can_Run = true;
 	this->DrawChildren();
+	this->DrawBottomHelper();
 
 	while (this->Can_Run) {
 		

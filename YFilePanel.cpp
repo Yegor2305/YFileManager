@@ -1,4 +1,6 @@
 ﻿#include "YFilePanel.h"
+
+#include <iostream>
 #include <__msvc_filebuf.hpp>
 
 YFilePanel::YFilePanel(unsigned short width, unsigned short height, LPCWSTR path,
@@ -110,23 +112,23 @@ void YFilePanel::FillFiles(LPCWSTR path)
 
 }
 
-void YFilePanel::DrawFiles(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
+void YFilePanel::DrawFiles(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, unsigned short display_offset) const
 {
 	unsigned short file_pos_x = this->Pos_X + 1;
-	unsigned short file_pos_y = this->Content_Offset_Top;
+	unsigned short file_pos_y = this->Content_Offset_Top + display_offset;
 
 	// Limit between start pos and vertical separator
 	unsigned short length_limit = (this->Pos_X + this->Width / 2) - file_pos_x;
 
 	for (unsigned short i = this->First_File_Index_To_Draw; i < this->Files_List.size(); i++)
 	{
-		if (i - this->First_File_Index_To_Draw == this->Max_Files_In_Column)
+		if (i - this->First_File_Index_To_Draw == this->Max_Files_In_Column - display_offset)
 		{
 			file_pos_y = 2;
 			file_pos_x = this->Pos_X + this->Width / 2 + 1;
 			length_limit = this->Pos_X + this->Width - file_pos_x - 1;
 		}
-		if (i - this->First_File_Index_To_Draw >= this->Max_Files_In_Column * 2) break;
+		if (i - this->First_File_Index_To_Draw >= this->Max_Files_In_Column * 2 - display_offset) break;
 
 		this->Files_List[i]->ChangePosition(file_pos_x, file_pos_y);
 		this->Files_List[i]->ChangeLimit(length_limit);
@@ -142,10 +144,10 @@ void YFilePanel::DrawTitle(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER
 	{
 		std::wstring first_part = this->Path.substr(0, this->Path.find(L'/') + 1);
 		first_part += L"...";
-		std::wstring last_part = this->Path.substr(this->Path.length() - (this->Width - 2 - first_part.length()) -1);
+		std::wstring last_part = this->Path.substr(this->Path.length() - (this->Width - 3 - first_part.length()) - 1);
 		std::wstring final_title = first_part + last_part;
 		LabelInfo label_info(
-			this->Pos_X + this->Width / 2 - final_title.length() / 2 - 1,
+			this->Pos_X + 1,
 			this->Pos_Y,
 			screen_buffer_info.dwSize.X,
 			this->Elements_Attributes);
@@ -188,6 +190,7 @@ void YFilePanel::DrawFileInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUF
 		label_info.X_Pos = this->Pos_X + this->Width - file_info.length() - 1;
 		AsmFunctions::DrawLabel(screen_buffer, label_info, file_info.c_str());
 	}
+	this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
 }
 
 void YFilePanel::DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
@@ -209,12 +212,12 @@ void YFilePanel::DrawCurrentDirectoryInfo(CHAR_INFO* screen_buffer, const CONSOL
 
 void YFilePanel::DrawVerticalSeparator(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info) const
 {
-	OutputPos pos(this->Pos_X + this->Width / 2, this->Pos_Y, screen_buffer_info.dwSize.X, this->Pos_Y + this->Height - 2);
+	OutputPos pos(this->Pos_X + this->Width / 2, this->Pos_Y + 1, screen_buffer_info.dwSize.X, this->Pos_Y + this->Height - 2);
 	LineInfo line_info;
 
 	line_info.FirstChar.UnicodeChar = this->Vertical_Line_Char;
 	line_info.MediumChar.UnicodeChar = this->Vertical_Line_Char;
-	line_info.LastChar.UnicodeChar = this->Vertical_Separator_Last_Char;
+	line_info.LastChar.UnicodeChar = this->Vertical_Line_Char;
 	line_info.Attributes = this->Border_Attributes;
 
 	AsmFunctions::DrawLineVertical(screen_buffer, pos, line_info);
@@ -230,14 +233,16 @@ void YFilePanel::ClearFiles()
 	this->Files_List.clear();
 }
 
-void YFilePanel::Refresh(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info)
+void YFilePanel::Refresh(CHAR_INFO* screen_buffer, const CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, unsigned short display_offset)
 {
 	this->File_To_Copy_Cut_Path->clear();
+	this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
 	this->ClearColumns(screen_buffer, screen_buffer_info);
 	this->ClearFiles();
 	this->FillFiles((this->Path + L"*.*").c_str());
 	this->First_File_Index_To_Draw = 0;
-	this->DrawFiles(screen_buffer, screen_buffer_info);
+	this->DrawFiles(screen_buffer, screen_buffer_info, display_offset);
+	this->DrawCurrentDirectoryInfo(screen_buffer, screen_buffer_info);
 	this->Hovered_File_Index = -1;
 	this->Selected_File_Index = -1;
 }
@@ -435,6 +440,22 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 				{
 					this->Path += this->Files_List[file_index]->GetName() + L"/";
 				}
+				else
+				{
+					auto path = this->Path + this->Files_List[file_index]->GetName();
+
+					SHELLEXECUTEINFO sei = { 0 };
+					sei.cbSize = sizeof(SHELLEXECUTEINFO);
+					sei.fMask = SEE_MASK_FLAG_NO_UI;
+					sei.hwnd = nullptr;
+					sei.lpVerb = nullptr;
+					sei.lpFile = path.c_str();
+					sei.lpParameters = nullptr;
+					sei.lpDirectory = nullptr; 
+					sei.nShow = SW_SHOWNORMAL; 
+
+					ShellExecuteEx(&sei);
+				}
 			}
 
 			this->ChangeDirectory(screen_buffer, screen_buffer_info);
@@ -493,7 +514,7 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 
 		if (drive.empty() || this->Path == drive)
 		{
-			this->DrawFiles(screen_buffer, screen_buffer_info);
+			this->Refresh(screen_buffer, screen_buffer_info);
 		}else
 		{
 			this->Path = drive;
@@ -513,9 +534,58 @@ void YFilePanel::MouseEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFF
 void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER_INFO& screen_buffer_info, KEY_EVENT_RECORD key_event)
 {
 
-	if (!this->In_Focus || !this->File_To_Copy_Cut_Path) return;
+	if (!this->In_Focus) return;
 
 	bool left_alt_pressed = key_event.dwControlKeyState & LEFT_ALT_PRESSED;
+
+	if (left_alt_pressed && (key_event.wVirtualKeyCode == 'F' || key_event.wVirtualKeyCode == 'D'))
+	{
+		unsigned short input_box_x = this->Pos_X + 1;
+		unsigned short input_box_y = this->Pos_Y + this->Content_Offset_Top;
+		unsigned short input_box_width = this->Width / 2;
+		YInputBox input_box(input_box_width, input_box_x, input_box_y, L"", screen_buffer,
+			&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
+			this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle);
+		this->Refresh(screen_buffer, screen_buffer_info, 1);
+		std::wstring new_file_directory_name = input_box.GetUserInput();
+		if (!new_file_directory_name.empty())
+		{
+			if (key_event.wVirtualKeyCode == 'D')
+			{
+				if (!CreateDirectory((this->Path + new_file_directory_name).c_str(), nullptr)) {
+					YConfirmModal confirm(this->Pos_X, this->Pos_Y, this->Width, this->Height, new std::wstring(L"Error while creating directory"), screen_buffer,
+						&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
+						this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle, 0x70, 0x70);
+					confirm.Confirm();
+				}
+			}
+			else
+			{
+				HANDLE hFile = CreateFile(
+					(this->Path + new_file_directory_name).c_str(),
+					GENERIC_WRITE,
+					0,
+					nullptr,
+					CREATE_NEW,
+					FILE_ATTRIBUTE_NORMAL,
+					nullptr
+				);
+
+				if (hFile != INVALID_HANDLE_VALUE) {
+					CloseHandle(hFile);
+				}
+				else {
+					YConfirmModal confirm(this->Pos_X, this->Pos_Y, this->Width, this->Height, new std::wstring(L"Error while creating file"), screen_buffer,
+						&screen_buffer_info, this->Std_Input_Handle, this->Input_Record_Buffer,
+						this->Buffer_Size, this->Input_Records_Number, this->Screen_Buffer_Handle, 0x70, 0x70);
+					confirm.Confirm();
+				}
+			}
+		}
+		this->Refresh(screen_buffer, screen_buffer_info);
+	}
+
+	if (!this->File_To_Copy_Cut_Path) return;
 
 	if (left_alt_pressed && key_event.wVirtualKeyCode == 'V')
 	{
@@ -549,7 +619,7 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 
 	if (this->Selected_File_Index == -1) return;
 
-	if (left_alt_pressed &&( key_event.wVirtualKeyCode == 'C' || key_event.wVirtualKeyCode == 'X'))
+	if (left_alt_pressed && (key_event.wVirtualKeyCode == 'C' || key_event.wVirtualKeyCode == 'X'))
 	{
 		*this->File_To_Copy_Cut_Path = this->Path + this->Files_List[this->Selected_File_Index]->GetName();
 
@@ -579,14 +649,10 @@ void YFilePanel::KeyEventHandler(CHAR_INFO* screen_buffer, CONSOLE_SCREEN_BUFFER
 			file_op.fFlags = FOF_ALLOWUNDO;
 
 			SHFileOperationW(&file_op);
-			this->Refresh(screen_buffer, screen_buffer_info);
-		}else
-		{
-			this->DrawFiles(screen_buffer, screen_buffer_info);
 		}
 
-		this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
-		
+		this->Refresh(screen_buffer, screen_buffer_info);
+		//this->DrawVerticalSeparator(screen_buffer, screen_buffer_info);
 		
 	}
 

@@ -5,6 +5,14 @@
 #include "YFilePanel.h"
 #include "YNotifier.h"
 
+struct ShortcutsInfo
+{
+	ShortcutsInfo(std::wstring shortcut_label, std::wstring meaning) :
+	Shortcut_Label(std::move(shortcut_label)), Meaning(std::move(meaning)) {}
+
+	std::wstring Shortcut_Label;
+	std::wstring Meaning;
+};
 
 class YApplication final : public YNotifier
 {
@@ -16,6 +24,7 @@ public:
 	void SetFPS(unsigned short fps_value);
 private:
 	void DrawChildren();
+	void DrawBottomHelper();
 	void ClearBuffer();
 	void NotifyMouseEvent(const MOUSE_EVENT_RECORD& mouse_event) override;
 	void NotifyKeyEvent(const KEY_EVENT_RECORD& key_event) override;
@@ -31,4 +40,14 @@ private:
 	int Delay_Time = 30;
 	std::wstring File_To_Copy_Paste;
 	bool Cut = false;
+	unsigned short Shortcuts_Count = 7;
+	ShortcutsInfo Shortcuts[7] = {
+		{L"Alt + X -", L"Cut"},
+		{L"Alt + C -", L"Copy"},
+		{L"Alt + V -", L"Paste"},
+		{L"Alt + D -", L"New dir"},
+		{L"Alt + F -", L"New file"},
+		{L"R -", L"Rename"},
+		{L"Del -", L"Delete"},
+	};
 };
